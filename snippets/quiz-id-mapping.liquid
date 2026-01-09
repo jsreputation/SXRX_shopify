@@ -1,0 +1,55 @@
+{%- comment -%}
+  Quiz ID Mapping Snippet
+  Centralized mapping of questionnaire types to Quiz IDs
+  Update the Quiz IDs below after creating quizzes in RevenueHunt v2
+{%- endcomment -%}
+
+{%- comment -%}
+  QUIZ ID MAPPING
+  Replace the placeholder values below with your actual Quiz IDs from RevenueHunt v2
+  Example: If your General Health quiz ID is "ABC123XYZ", replace 'GENERAL_HEALTH_QUIZ_ID' with 'ABC123XYZ'
+{%- endcomment -%}
+
+{%- assign QUIZ_GENERAL_HEALTH = '0k34ts' -%}
+{%- assign QUIZ_MENTAL_HEALTH = 'QNLeG7' -%}
+{%- assign QUIZ_ED = '2m90Mo' -%}
+{%- assign QUIZ_LOW_LIBIDO = 'Gh6L0K' -%}
+{%- assign QUIZ_PE = 'gl11rd' -%}
+{%- assign QUIZ_LOW_TESTOSTERONE = 'yFYLQN' -%}
+{%- assign QUIZ_WEIGHT_MANAGEMENT = 'FAO9CM' -%}
+{%- assign QUIZ_MENOPAUSE_HRT = 'S7thaH' -%}
+{%- assign QUIZ_HAIR_LOSS = 'UBhavI' -%}
+{%- assign QUIZ_DEFAULT = '0k34tS' -%} {%- comment -%} Fallback/default quiz ID {%- endcomment -%}
+
+{%- comment -%}
+  Function to get quiz ID based on product
+  Usage: {% render 'quiz-id-mapping', product: product %}
+  Returns: quizId variable
+{%- endcomment -%}
+
+{%- assign quizId = product.metafields.sxrx.quiz_id -%}
+
+{%- if quizId == blank -%}
+  {%- if product.tags contains 'questionnaire-general-health' -%}
+    {%- assign quizId = QUIZ_GENERAL_HEALTH -%}
+  {%- elsif product.tags contains 'questionnaire-mental-health' -%}
+    {%- assign quizId = QUIZ_MENTAL_HEALTH -%}
+  {%- elsif product.tags contains 'questionnaire-erectile-dysfunction' or product.tags contains 'questionnaire-ed' -%}
+    {%- assign quizId = QUIZ_ED -%}
+  {%- elsif product.tags contains 'questionnaire-low-libido' -%}
+    {%- assign quizId = QUIZ_LOW_LIBIDO -%}
+  {%- elsif product.tags contains 'questionnaire-premature-ejaculation' or product.tags contains 'questionnaire-pe' -%}
+    {%- assign quizId = QUIZ_PE -%}
+  {%- elsif product.tags contains 'questionnaire-low-testosterone' or product.tags contains 'questionnaire-trt' -%}
+    {%- assign quizId = QUIZ_LOW_TESTOSTERONE -%}
+  {%- elsif product.tags contains 'questionnaire-weight-management' or product.tags contains 'questionnaire-glp1' -%}
+    {%- assign quizId = QUIZ_WEIGHT_MANAGEMENT -%}
+  {%- elsif product.tags contains 'questionnaire-menopause' or product.tags contains 'questionnaire-hrt' -%}
+    {%- assign quizId = QUIZ_MENOPAUSE_HRT -%}
+  {%- elsif product.tags contains 'questionnaire-hair-loss' -%}
+    {%- assign quizId = QUIZ_HAIR_LOSS -%}
+  {%- else -%}
+    {%- assign quizId = QUIZ_DEFAULT -%}
+  {%- endif -%}
+{%- endif -%}
+

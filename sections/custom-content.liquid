@@ -1,0 +1,43 @@
+{{ 'questionnaire-styles.css' | asset_url | stylesheet_tag }}
+<div class="section-spacing">
+  <div class="row">
+    <div class="small-12 columns">
+      <div class="custom-content-container">
+        {% if section.settings.heading != blank %}
+          <h1 class="custom-content-heading">{{ section.settings.heading }}</h1>
+        {% endif %}
+        <div class="custom-content-body">
+          {{ section.settings.custom_html }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Custom Content",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Custom Content"
+    },
+    {
+      "type": "html",
+      "id": "custom_html",
+      "label": "Custom HTML",
+      "default": "<p>Add your custom HTML content here.</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Content"
+    }
+  ]
+}
+{% endschema %}
+

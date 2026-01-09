@@ -1,0 +1,187 @@
+section.sxrx-hero {
+    max-width: 84%;
+    margin: 0 auto;
+        border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+#shopify-section-template--25476250435905__health_split_section_hzDMXy .health-wrapper {
+    margin: 0 auto;
+    background: #012050;
+    padding: 2rem;
+}
+div#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL {
+    max-width: 84%;
+    margin: 0 auto;
+    background: #012050;
+    padding: 3rem;
+    width: 100%;
+}
+#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL .mh-banner h2 {
+    color: #fff;
+}
+.process-section h2.process-heading {
+    color: #fff;
+}
+.process-section h3.process-title {
+    color: #fff;
+}
+.phone-testimonial-section .pt-phone img {
+    display: none;
+}
+section.phone-testimonial-section {
+    max-width: 84%;
+    margin: 0 auto;
+    background: #012050;
+    padding: 2rem 2rem;
+}
+#shopify-section-template--25476250435905__image_with_text_7mY4Rw .small-12.columns {
+    background: #012050;
+    padding: 0px;
+    margin: 0 auto;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+div#shopify-section-template--25476250435905__image_with_text_7mY4Rw {
+    max-width: 84%;
+    margin: 0 auto;
+}
+#shopify-section-template--25476250435905__image_with_text_7mY4Rw .row {
+    padding: 0px;
+}
+.collapsible-content.section-spacing {
+    display: flex;
+    flex-flow: column;
+    max-width: 78%;
+    margin: 2rem auto;
+    gap: 1rem;
+}
+#shopify-section-template--25476250435905__collapsible_content_FNHLcP .section-header {
+    justify-content: center;
+}
+theme-footer#footer {
+    background: #F3F4F8;
+    color: #000;
+    border-top: 1px solid #8080801f;
+    padding-bottom: 0px;
+}
+.footer button.thb-widget-title.collapsible {
+    color: #000 !important;
+}
+.footer a, .sub-footer p {
+   color: #000000b3!important;
+}
+.footer a:focus, .footer a:hover {
+    color: #000!important;
+}
+#contact input::placeholder {
+    color: #000!important;
+}
+#contact .care-left img {
+    max-width: 100%;
+}
+#contact .care-right {
+    max-width: 41%;
+}
+#contact .care-wrapper {
+    justify-content: center;
+}
+#contact .care-options input{
+    display: flex;
+    width: 6%;
+    margin-bottom: 0px;
+}
+#contact .care-options label {
+    display: flex;
+}
+div#shopify-section-template--25476250435905__health_split_section_hzDMXy {
+    max-width: 84%;
+    margin: 0 auto;
+    width:100%;
+}
+#shopify-section-template--25476250435905__health_split_section_hzDMXy section.health-split {
+    padding: 0px;
+}
+
+
+@media(max-width:700px){
+#shopify-section-template--25476250435905__hero_sxrx_FrFAUC .sxrx-heading {
+    font-size: 34px;
+    max-width: 100%;
+}
+div#shopify-section-template--25476250435905__health_split_section_hzDMXy, div#shopify-section-template--25476250435905__image_with_text_7mY4Rw {
+    max-width: 91%;
+}
+#shopify-section-template--25476250435905__hero_sxrx_FrFAUC .sxrx-hero{
+    padding: 70px 20px;
+}
+#shopify-section-template--25476250435905__hero_sxrx_FrFAUC .sxrx-smalltext {
+    max-width: 100%;
+}
+#shopify-section-template--25476250435905__health_split_section_hzDMXy .health-wrapper {
+    max-width: 100%;
+}
+section.sxrx-hero {
+    max-width: 91%;
+}
+#shopify-section-template--25476250435905__health_split_section_hzDMXy .health-split {
+    padding: 0 18px;
+}
+#shopify-section-template--25476250435905__hero_sxrx_FrFAUC .sxrx-hero {
+        padding-bottom: 0px !important;
+}
+#shopify-section-template--25476250435905__health_split_section_hzDMXy .health-box{
+    padding: 21px;
+}
+div#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL {
+    max-width: 91%;
+     padding-top: 0px!important;
+         padding: 1rem;
+}
+#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL .mh-content {
+    max-width: 100%;
+}
+#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL .mh-banner{
+    padding: 21px;
+}
+#shopify-section-template--25476250435905__process_steps_LT6ATj .process-section {
+    max-width: 91%;
+}
+#shopify-section-template--25476250435905__health_split_section_hzDMXy .health-wrapper{
+    padding: 1rem;
+}
+section.phone-testimonial-section {
+    max-width: 91%;
+        padding: 1rem;
+}
+#shopify-section-template--25476250435905__testimonials_phone_zH6JbV .pt-heading{
+    margin-bottom: 0px;
+}
+/* #shopify-section-template--25476250435905__image_with_text_7mY4Rw .row {
+    padding: 0px 14px;
+} */
+#shopify-section-template--25476250435905__collapsible_content_FNHLcP h3.section-header--title {
+    text-align: center;
+    font-size: 31px;
+    line-height: 44px;
+}
+#shopify-section-template--25476250435905__collapsible_content_FNHLcP .collapsible-content.section-spacing{
+    max-width: 90%;
+}
+#shopify-section-template--25476250435905__collapsible_content_FNHLcP .section-header {
+    justify-content: center;
+    padding: 0 0 0px;
+}
+#shopify-section-template--25476250435905__featured_blog_eTykzE h3.section-header--title {
+    text-align: center;
+    font-size: 40px;
+}
+#shopify-section-template--25476250435905__featured_blog_eTykzE .blog-posts.section-spacing.section-spacing--disable-top {
+    margin-bottom: 0px;
+}
+.footer .thb-widget-title.collapsible span svg path {
+    stroke: #000000!important;
+}
+.sub-footer {
+    margin-top: 0px!important;
+}
+}

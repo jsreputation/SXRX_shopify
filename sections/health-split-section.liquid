@@ -1,0 +1,169 @@
+<section class="health-split">
+  <div class="health-wrapper">
+
+    <!-- LEFT BOX -->
+    <div class="health-box womens">
+      <div class="health-content">
+        <h2>{{ section.settings.w_title }}</h2>
+        <p>{{ section.settings.w_desc }}</p>
+        <a href="{{ section.settings.w_btn_link }}" class="btn">{{ section.settings.w_btn_text }}</a>
+
+        <div class="health-features">
+          {% for block in section.blocks %}
+            {% if block.type == 'women_feature' %}
+              <div class="feature-item">
+                <span class="icon">🔹</span>
+                <span>{{ block.settings.text }}</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="health-image">
+        {% if section.settings.w_image %}
+          <img src="{{ section.settings.w_image | image_url }}" alt="Women's Health">
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT BOX -->
+    <div class="health-box mens">
+      <div class="health-content">
+        <h2>{{ section.settings.m_title }}</h2>
+        <p>{{ section.settings.m_desc }}</p>
+        <a href="{{ section.settings.m_btn_link }}" class="btn btn-blue">{{ section.settings.m_btn_text }}</a>
+
+        <div class="health-features">
+          {% for block in section.blocks %}
+            {% if block.type == 'men_feature' %}
+              <div class="feature-item">
+                <span class="icon">🔹</span>
+                <span>{{ block.settings.text }}</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="health-image">
+        {% if section.settings.m_image %}
+          <img src="{{ section.settings.m_image | image_url }}" alt="Men's Health">
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Health Split Section",
+  "settings": [
+    { "type": "text", "id": "w_title", "label": "Women's title", "default": "Women's Health" },
+    { "type": "textarea", "id": "w_desc", "label": "Women's description" },
+    { "type": "image_picker", "id": "w_image", "label": "Women's image" },
+    { "type": "text", "id": "w_btn_text", "label": "Women's button text", "default": "Learn more" },
+    { "type": "url", "id": "w_btn_link", "label": "Women's button link" },
+
+    { "type": "text", "id": "m_title", "label": "Men's title", "default": "Men's Health" },
+    { "type": "textarea", "id": "m_desc", "label": "Men's description" },
+    { "type": "image_picker", "id": "m_image", "label": "Men's image" },
+    { "type": "text", "id": "m_btn_text", "label": "Men's button text", "default": "Learn more" },
+    { "type": "url", "id": "m_btn_link", "label": "Men's button link" }
+  ],
+  "blocks": [
+    {
+      "type": "women_feature",
+      "name": "Women's Feature",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Feature text" }
+      ]
+    },
+    {
+      "type": "men_feature",
+      "name": "Men's Feature",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Feature text" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Health Split Section" }]
+}
+{% endschema %}
+
+<style>
+.health-split {
+  padding: 0 40px;
+}
+
+.health-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.health-box {
+  border-radius: 20px;
+  padding: 40px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.womens { background: linear-gradient(135deg, #5a0f64, #b83188); }
+.mens { background: linear-gradient(135deg, #0a3d75, #176bb9); }
+
+.health-content { max-width: 60%; }
+
+.health-content h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+      color: #fff;
+}
+
+.health-content p {
+  opacity: 0.85;
+  margin-bottom: 20px;
+}
+
+.btn {
+  background: #ff3b6a;
+  padding: 12px 22px;
+  border-radius: 25px;
+  display: inline-block;
+  color: #fff;
+  text-decoration: none;
+}
+
+.btn-blue { background: #6EC0FF; }
+
+.health-features {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.health-image img {
+  width: 200px;
+  border-radius: 16px;
+}
+
+@media(max-width: 900px) {
+  .health-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .health-content { max-width: 100%; }
+  .health-image { display: none; }
+}
+</style>

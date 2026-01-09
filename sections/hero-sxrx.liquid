@@ -1,0 +1,83 @@
+<section class="sxrx-hero">
+  <div class="sxrx-container">
+    <h1 class="sxrx-heading">{{ section.settings.heading }}</h1>
+    <p class="sxrx-subtext">{{ section.settings.subtext }}</p>
+
+    {% if section.settings.logo %}
+      <img src="{{ section.settings.logo | image_url }}" class="sxrx-logo" alt="Hero Logo">
+    {% endif %}
+
+    <p class="sxrx-smalltext">{{ section.settings.smalltext }}</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "SXRX Hero Section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Main Heading",
+      "default": "SXRX is committed to providing access to high-quality healthcare solutions at an affordable cost"
+    },
+    {
+      "type": "textarea",
+      "id": "subtext",
+      "label": "Sub Text"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "3D Logo"
+    },
+    {
+      "type": "textarea",
+      "id": "smalltext",
+      "label": "Bottom Paragraph",
+      "default": "We connect you with esteemed medical providers..."
+    }
+  ],
+  "presets": [
+    {
+      "name": "SXRX Hero Section"
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+.sxrx-hero {
+  background: linear-gradient(to bottom, #0d6ea6, #012050);
+  padding: 120px 20px;
+  text-align: center;
+  color: #fff;
+}
+
+.sxrx-heading {
+  font-size: 42px;
+  font-weight: 700;
+  max-width: 55%;
+  margin: 0 auto 20px;
+      color: #fff;
+}
+
+.sxrx-subtext {
+  font-size: 26px;
+  opacity: 0.85;
+  margin-bottom: 40px;
+}
+
+.sxrx-logo {
+  width: 300px;
+  margin: 30px auto;
+  display: block;
+}
+
+.sxrx-smalltext {
+  max-width: 45%;
+  margin: 40px auto 0;
+  font-size: 16px;
+  opacity: 0.8;
+}
+</style>

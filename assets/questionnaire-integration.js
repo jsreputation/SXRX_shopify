@@ -1,0 +1,304 @@
+// Questionnaire Integration for Shopify Storefront
+// Handles purchase button redirect to questionnaire and completion flow
+
+(function() {
+  'use strict';
+
+  const BACKEND_API = 'https://api.sxrx.us'; // Update with your backend URL
+
+  // Check if customer has completed questionnaire
+  async function checkQuestionnaireStatus(customerId, productId) {
+    try {
+      const response = await fetch(`${BACKEND_API}/api/shopify/products/${productId}`, {
+        headers: {
+          'Authorization': `Bearer ${getStorefrontToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) return { requiresQuestionnaire: false, completed: false };
+      
+      const data = await response.json();
+      return {
+        requiresQuestionnaire: data.requiresQuestionnaire || false,
+        completed: data.customerHasCompleted || false,
+        status: data.questionnaireStatus || 'not_started'
+      };
+    } catch (error) {
+      console.error('Error checking questionnaire status:', error);
+      return { requiresQuestionnaire: false, completed: false };
+    }
+  }
+
+  // Get Storefront API token (if customer is logged in)
+  function getStorefrontToken() {
+    return window.storefrontToken || '';
+  }
+
+  // Redirect to questionnaire page
+  function redirectToQuestionnaire(productId, quizId, customerId, purchaseType) {
+    const params = new URLSearchParams({
+      product: productId,
+      quiz: quizId,
+      purchaseType: purchaseType || 'subscription'
+    });
+    
+    if (customerId) {
+      params.append('customer', customerId);
+    }
+    
+    // Redirect to questionnaire page
+    window.location.href = `/pages/questionnaire?${params.toString()}`;
+  }
+
+  // Handle purchase button click
+  function handlePurchaseButtonClick(event) {
+    event.preventDefault();
+    
+    const button = event.currentTarget;
+    const productId = button.getAttribute('data-product-id');
+    const quizId = button.getAttribute('data-quiz-id');
+    const customerId = button.getAttribute('data-customer-id');
+    
+    // Get selected purchase type
+    const purchaseTypeRadio = document.querySelector('input[name="purchase-type"]:checked');
+    const purchaseType = purchaseTypeRadio ? purchaseTypeRadio.value : 'subscription';
+    
+    // Store purchase type in sessionStorage for later use
+    sessionStorage.setItem(`purchaseType_${productId}`, purchaseType);
+    sessionStorage.setItem(`redirectProduct_${productId}`, window.location.href);
+    
+    // Redirect to questionnaire
+    redirectToQuestionnaire(productId, quizId, customerId, purchaseType);
+  }
+
+  // Initialize RevenueHunt quiz on questionnaire page
+  function initRevenueHuntQuiz(quizId) {
+    // Listen for RevenueHunt completion event
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'revenuehunt-quiz-completed') {
+        handleQuizCompletion(event.data);
+      }
+    });
+
+    // Also listen for RevenueHunt's custom event
+    document.addEventListener('revenuehunt:quiz:completed', function(event) {
+      handleQuizCompletion(event.detail);
+    });
+  }
+
+  // Handle quiz completion
+  async function handleQuizCompletion(quizData) {
+    try {
+      // Get product ID and customer ID from URL or storage
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('product') || window.currentProductId;
+      const customerId = urlParams.get('customer') || window.customerId;
+      const purchaseType = urlParams.get('purchaseType') || sessionStorage.getItem(`purchaseType_${productId}`) || 'subscription';
+      
+      // Send quiz results to backend
+      const response = await fetch(`${BACKEND_API}/webhooks/revenue-hunt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...quizData,
+          customerId: customerId,
+          productId: productId,
+          purchaseType: purchaseType,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        if (result.action === 'allow_purchase') {
+          // No red flags - store completion and redirect back to product
+          sessionStorage.setItem(`questionnaire_completed_${productId}`, 'true');
+          sessionStorage.setItem(`patient_chart_url_${productId}`, result.patientChartUrl || '');
+          
+          // Redirect back to product page
+          const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
+          window.location.href = redirectUrl + '?questionnaire_completed=true';
+        } else if (result.action === 'schedule_consultation') {
+          // Red flags detected - show consultation scheduling
+          showConsultationScheduling(result);
+        }
+      } else {
+        showMessage('Error processing questionnaire. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error handling quiz completion:', error);
+      showMessage('Error processing questionnaire. Please try again.', 'error');
+    }
+  }
+
+  // Get product handle from ID (helper function)
+  function getProductHandle(productId) {
+    // This would ideally come from the backend or be stored
+    // For now, we'll use the product ID in the URL
+    return '';
+  }
+
+  // Show consultation scheduling
+  function showConsultationScheduling(data) {
+    const container = document.getElementById('questionnaire-result');
+    if (!container) return;
+
+    const message = `
+      <div class="consultation-prompt" style="text-align: center; padding: 2rem;">
+        <h3>Consultation Required</h3>
+        <p>Based on your questionnaire, we recommend scheduling a consultation with our medical director.</p>
+        <button id="schedule-consultation-btn" class="btn btn-primary" style="margin-top: 1rem;">
+          Schedule Consultation
+        </button>
+      </div>
+    `;
+    
+    container.innerHTML = message;
+    container.style.display = 'block';
+
+    // Initialize Cowlendar when button is clicked
+    const scheduleBtn = document.getElementById('schedule-consultation-btn');
+    if (scheduleBtn) {
+      scheduleBtn.addEventListener('click', function() {
+        initCowlendarBooking(data);
+      });
+    }
+  }
+
+  // Initialize Cowlendar booking
+  function initCowlendarBooking(consultationData) {
+    // Cowlendar should be embedded on the page
+    const cowlendarEmbed = document.querySelector('[data-cowlendar-app]');
+    
+    if (cowlendarEmbed) {
+      // Pass consultation data to Cowlendar
+      window.cowlendarData = {
+        patientId: consultationData.patientId,
+        providerId: consultationData.providerId,
+        practiceId: consultationData.practiceId,
+        availableSlots: consultationData.availableSlots || []
+      };
+      
+      // Trigger Cowlendar modal
+      cowlendarEmbed.click();
+    } else {
+      // Redirect to appointment booking page or homepage schedule button
+      window.location.href = '/?schedule=true';
+    }
+  }
+
+  // Show status message
+  function showMessage(message, type) {
+    const container = document.getElementById('questionnaire-result') || document.getElementById('questionnaire-status');
+    if (container) {
+      container.innerHTML = `<p class="message ${type}" style="padding: 1rem; text-align: center;">${message}</p>`;
+      container.style.display = 'block';
+    }
+  }
+
+  // Enable add to cart after questionnaire completion
+  function enableAddToCartAfterCompletion() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product') || document.querySelector('[data-product-id]')?.getAttribute('data-product-id');
+    
+    if (productId && sessionStorage.getItem(`questionnaire_completed_${productId}`) === 'true') {
+      // Hide purchase button, show add to cart
+      const purchaseButton = document.getElementById('purchase-button');
+      const purchaseWrapper = document.querySelector('.questionnaire-purchase-wrapper');
+      const addToCartWrapper = document.getElementById('add-to-cart-wrapper');
+      
+      if (purchaseButton) purchaseButton.style.display = 'none';
+      if (purchaseWrapper) purchaseWrapper.style.display = 'none';
+      if (addToCartWrapper) addToCartWrapper.style.display = 'block';
+      
+      // Show success message
+      const statusDiv = document.getElementById('questionnaire-completion-status');
+      if (statusDiv) {
+        statusDiv.setAttribute('data-completed', 'true');
+        statusDiv.innerHTML = '<p style="color: green; padding: 0.5rem;">✓ Questionnaire completed. You can now add to cart.</p>';
+        statusDiv.style.display = 'block';
+      }
+
+      // Intercept form submission to add purchase type
+      const productForm = document.querySelector('form[action*="/cart/add"]');
+      if (productForm) {
+        productForm.addEventListener('submit', function(e) {
+          const purchaseType = sessionStorage.getItem(`purchaseType_${productId}`) || 'subscription';
+          
+          // Add purchase type as hidden input or cart attribute
+          let purchaseTypeInput = productForm.querySelector('input[name="properties[Purchase Type]"]');
+          if (!purchaseTypeInput) {
+            purchaseTypeInput = document.createElement('input');
+            purchaseTypeInput.type = 'hidden';
+            purchaseTypeInput.name = 'properties[Purchase Type]';
+            productForm.appendChild(purchaseTypeInput);
+          }
+          purchaseTypeInput.value = purchaseType === 'subscription' ? 'Subscription (Monthly)' : 'One-Time Purchase';
+          
+          // Also add as cart note attribute
+          let noteInput = productForm.querySelector('input[name="properties[_purchaseType]"]');
+          if (!noteInput) {
+            noteInput = document.createElement('input');
+            noteInput.type = 'hidden';
+            noteInput.name = 'properties[_purchaseType]';
+            productForm.appendChild(noteInput);
+          }
+          noteInput.value = purchaseType;
+        });
+      }
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on a product page
+    const purchaseButton = document.getElementById('purchase-button');
+    
+    if (purchaseButton) {
+      // Set up purchase button click handler
+      purchaseButton.addEventListener('click', handlePurchaseButtonClick);
+      
+      // Check if questionnaire already completed
+      const productId = purchaseButton.getAttribute('data-product-id');
+      const customerId = purchaseButton.getAttribute('data-customer-id');
+      
+      if (productId && customerId) {
+        checkQuestionnaireStatus(customerId, productId).then(status => {
+          if (status.completed && status.status === 'approved') {
+            enableAddToCartAfterCompletion();
+          }
+        });
+      } else {
+        // Check sessionStorage for guest users
+        enableAddToCartAfterCompletion();
+      }
+    }
+    
+    // Check if we're on the questionnaire page
+    const urlParams = new URLSearchParams(window.location.search);
+    const quizId = urlParams.get('quiz');
+    
+    if (quizId && window.location.pathname.includes('questionnaire')) {
+      // Store product and customer info
+      window.currentProductId = urlParams.get('product');
+      window.customerId = urlParams.get('customer');
+      
+      // Initialize RevenueHunt quiz
+      if (quizId && !quizId.includes('_QUIZ_ID')) {
+        initRevenueHuntQuiz(quizId);
+        
+        // Trigger RevenueHunt quiz opening
+        // RevenueHunt v2 uses hash-based navigation
+        window.location.hash = `quiz-${quizId}`;
+      } else {
+        console.error('Invalid or placeholder Quiz ID:', quizId);
+        showMessage('Quiz configuration error. Please contact support.', 'error');
+      }
+    }
+  });
+})();
+

@@ -1,0 +1,54 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "1661619382b4020fa2": {
+      "type": "rich-text",
+      "blocks": {
+        "166161938159ca8988-1": {
+          "type": "heading",
+          "settings": {
+            "text": "CONTACT SXRX Care",
+            "marker_style": "style1",
+            "size": "h1",
+            "marker_color": "#fd6262"
+          }
+        }
+      },
+      "block_order": [
+        "166161938159ca8988-1"
+      ],
+      "disabled": true,
+      "settings": {
+        "text_width": "medium",
+        "text_position": "center",
+        "text_alignment": "center",
+        "color_bg": "rgba(0,0,0,0)",
+        "color_heading": "#1a1c1d",
+        "color_text": "#151515",
+        "color_links": "#151515",
+        "disable_top_spacing": false,
+        "disable_bottom_spacing": true
+      }
+    },
+    "1652268757b7c53383": {
+      "type": "contact-care",
+      "settings": {
+        "title": "",
+        "subtitle": "We’re here to help with treatments, appointments, orders, and subscriptions. Send us a note and our Care",
+        "image": "shopify://shop_images/Untitled_2.png"
+      }
+    }
+  },
+  "order": [
+    "1661619382b4020fa2",
+    "1652268757b7c53383"
+  ]
+}

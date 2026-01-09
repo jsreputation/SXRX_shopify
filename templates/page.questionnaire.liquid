@@ -1,0 +1,46 @@
+{%- comment -%}
+  Questionnaire Page Template
+  Displays RevenueHunt questionnaire for products requiring it
+{%- endcomment -%}
+
+{{ 'questionnaire-styles.css' | asset_url | stylesheet_tag }}
+
+<div class="questionnaire-page-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+  <div class="questionnaire-header" style="text-align: center; margin-bottom: 2rem;">
+    <h1>Medical Questionnaire</h1>
+    <p>Please complete the questionnaire below to proceed with your purchase.</p>
+  </div>
+
+  <div id="questionnaire-result" style="display: none;"></div>
+
+  <div class="questionnaire-content" id="questionnaire-content">
+    <div class="questionnaire-loading" style="text-align: center; padding: 3rem;">
+      <p>Loading questionnaire...</p>
+    </div>
+  </div>
+
+  <div class="questionnaire-footer" style="margin-top: 2rem; text-align: center; padding-top: 2rem; border-top: 1px solid #e2e2e2;">
+    <p style="color: #666; font-size: 0.9rem;">
+      Your information is secure and will only be used for medical consultation purposes.
+    </p>
+  </div>
+</div>
+
+<script>
+  // Initialize questionnaire when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const quizId = urlParams.get('quiz');
+    const productId = urlParams.get('product');
+    
+    if (quizId && productId) {
+      // RevenueHunt v2 will handle the quiz display via hash
+      // The questionnaire-integration.js will handle the completion
+      console.log('Questionnaire initialized for product:', productId, 'Quiz:', quizId);
+    } else {
+      document.getElementById('questionnaire-content').innerHTML = 
+        '<div style="text-align: center; padding: 2rem;"><p style="color: red;">Invalid questionnaire link. Please return to the product page.</p></div>';
+    }
+  });
+</script>
+

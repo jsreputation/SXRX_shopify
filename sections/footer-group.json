@@ -1,0 +1,79 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer group",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "menu-1": {
+          "type": "menu",
+          "settings": {
+            "column_size": "medium",
+            "title": "Resources",
+            "menu": "resources"
+          }
+        },
+        "menu-2": {
+          "type": "menu",
+          "settings": {
+            "column_size": "medium",
+            "title": "Women's health",
+            "menu": "womens-health"
+          }
+        },
+        "menu_9J87di": {
+          "type": "menu",
+          "settings": {
+            "column_size": "medium",
+            "title": "Men's health",
+            "menu": "mens-health"
+          }
+        },
+        "menu_mBpF9Q": {
+          "type": "menu",
+          "settings": {
+            "column_size": "medium",
+            "title": "Mental Health",
+            "menu": "mental-health"
+          }
+        },
+        "signup": {
+          "type": "signup",
+          "disabled": true,
+          "settings": {
+            "column_size": "large",
+            "title": "Subscribe to our newsletter",
+            "text": "<p>Sign up for our newsletter and receive 10% off your first order!</p>"
+          }
+        }
+      },
+      "block_order": [
+        "menu-1",
+        "menu-2",
+        "menu_9J87di",
+        "menu_mBpF9Q",
+        "signup"
+      ],
+      "settings": {
+        "footer_reveal_animation": false,
+        "copyright_text": "",
+        "show_language_switcher": false,
+        "show_currency_switcher": false,
+        "show_payment_icons": true,
+        "enable_follow_on_shop": true
+      }
+    }
+  },
+  "order": [
+    "footer"
+  ]
+}

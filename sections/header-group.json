@@ -1,0 +1,111 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "Header group",
+  "sections": {
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "blocks": {
+        "text-1": {
+          "type": "text",
+          "settings": {
+            "icon": "none",
+            "text": "Free shipping all orders on over $60",
+            "link": "",
+            "color_bg": "#3f72e5",
+            "color_text": "#ffffff"
+          }
+        },
+        "text-2": {
+          "type": "text",
+          "settings": {
+            "icon": "none",
+            "text": "Returns extended to 60 days",
+            "link": "",
+            "color_bg": "#4327ac",
+            "color_text": "#ffffff"
+          }
+        },
+        "text-3": {
+          "type": "text",
+          "settings": {
+            "icon": "none",
+            "text": "15% off on all products",
+            "link": "",
+            "color_bg": "#953997",
+            "color_text": "#ffffff"
+          }
+        }
+      },
+      "block_order": [
+        "text-1",
+        "text-2",
+        "text-3"
+      ],
+      "disabled": true,
+      "settings": {
+        "announcement_bar": true,
+        "announcement_bar_homepage_only": false,
+        "announcement_bar_layout": "carousel",
+        "direction": "left",
+        "speed": "20s",
+        "use_block_colors": true,
+        "autoplay": true,
+        "autoplay_length": 5
+      }
+    },
+    "header-secondary-menu": {
+      "type": "header-secondary-menu",
+      "disabled": true,
+      "settings": {
+        "full_width": false,
+        "secondary_menu": "",
+        "show_language_switcher": false,
+        "show_currency_switcher": true,
+        "show_social_media": true
+      }
+    },
+    "header": {
+      "type": "header",
+      "settings": {
+        "sticky_header": true,
+        "full_width": false,
+        "logo": "shopify://shop_images/sxrx.png",
+        "logo_height_range": 64,
+        "logo_height_range_mobile": 47,
+        "style": "style1",
+        "header_shadow": "header--shadow-small",
+        "menu": "menu",
+        "cart_icon": "cart",
+        "minimized_search": true,
+        "transparent_header": false,
+        "show_social_links": false,
+        "show_language_switcher": false,
+        "show_currency_switcher": false
+      }
+    },
+    "header-mobile-navigation": {
+      "type": "header-mobile-navigation",
+      "disabled": true,
+      "settings": {
+        "mobile_nav": "main-menu",
+        "color_links": "#ffffff",
+        "color_bg": "#919999"
+      }
+    }
+  },
+  "order": [
+    "announcement-bar",
+    "header-secondary-menu",
+    "header",
+    "header-mobile-navigation"
+  ]
+}

@@ -1,0 +1,118 @@
+/* Questionnaire Integration Styles */
+
+.questionnaire-status {
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+}
+
+.questionnaire-status .questionnaire-message {
+  margin: 0;
+  font-weight: 500;
+}
+
+.questionnaire-button-wrapper {
+  margin: 1rem 0;
+}
+
+.questionnaire-btn {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.purchase-type-selector {
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.purchase-type-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.purchase-type-options {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.purchase-type-options label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.purchase-type-options input[type="radio"] {
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.purchase-button {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.consultation-prompt {
+  padding: 2rem;
+  text-align: center;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.consultation-prompt h3 {
+  margin-top: 0;
+  color: #856404;
+}
+
+.consultation-prompt p {
+  color: #856404;
+  margin-bottom: 1rem;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.questionnaire-page-container {
+  min-height: 60vh;
+}
+
+.questionnaire-loading {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+#add-to-cart-wrapper {
+  margin-top: 1rem;
+}
+

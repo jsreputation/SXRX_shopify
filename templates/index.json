@@ -1,0 +1,699 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "spacer_9LrAfG": {
+      "type": "spacer",
+      "settings": {
+        "spacer_mobile": 15,
+        "spacer_desktop": 0,
+        "border_separator": false,
+        "border_separator_full": false
+      }
+    },
+    "16479477632637c9a7": {
+      "type": "slideshow",
+      "blocks": {
+        "fe3c4f31-61b1-4931-bde1-e46ecb72a090": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/ChatGPT_Image_Nov_18_2025_03_44_57_PM.png",
+            "mobile_image": "shopify://shop_images/ChatGPT_Image_Nov_21_2025_10_21_22_AM.png",
+            "slide_link": "",
+            "video_background": false,
+            "badge_text": "",
+            "subheading": "",
+            "heading": "Better Care,\nLess Hassle",
+            "heading_size": "h1",
+            "content": "Affordable, high-quality care — personalized by trusted providers to fit your health and your budget.",
+            "description_size": "large",
+            "content_position": "top-left",
+            "text_alignment": "left",
+            "content_size": "medium",
+            "color_slidebg": "#3f72e5",
+            "color_slidebg_opacity": 0,
+            "color_slidebg_blur": 0,
+            "color_text": "#1a1c1d",
+            "color_badge_bg": "#3f72e5",
+            "color_badge_text": "#ffffff",
+            "overlay_color": "#000000",
+            "overlay_opacity": 0,
+            "overlay_gradient": "",
+            "button_1_text": "Schedule an appointment",
+            "button_1_color": "regular",
+            "button_1_link": "https://app.sxrx.us",
+            "use_text_button_1": false,
+            "button_2_text": "",
+            "button_2_color": "white",
+            "button_2_link": "",
+            "use_text_button_2": true
+          }
+        },
+        "0aa79bf4-864f-418d-a154-7f4dd2b2614b": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "slide_link": "",
+            "video_background": true,
+            "badge_text": "",
+            "subheading": "Smart Living",
+            "heading": "Control Everything From Your Phone",
+            "heading_size": "h1",
+            "content": "Smartphones are quickly becoming all-empowering devices that can turn your house into a fully controllable smart home.",
+            "description_size": "large",
+            "content_position": "middle-center",
+            "text_alignment": "center",
+            "content_size": "medium",
+            "color_slidebg": "#6a6a6a",
+            "color_slidebg_opacity": 0,
+            "color_slidebg_blur": 0,
+            "color_text": "#ffffff",
+            "color_badge_bg": "#3f72e5",
+            "color_badge_text": "#ffffff",
+            "overlay_color": "#000000",
+            "overlay_opacity": 0,
+            "overlay_gradient": "",
+            "button_1_text": "Shop Now",
+            "button_1_color": "accent",
+            "button_1_link": "",
+            "use_text_button_1": false,
+            "button_2_text": "",
+            "button_2_color": "white",
+            "button_2_link": "",
+            "use_text_button_2": false
+          }
+        },
+        "164794776393e76b8e-2": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "slide_link": "",
+            "video_background": false,
+            "badge_text": "",
+            "subheading": "SECURITY CAMERAS",
+            "heading": "Outdoor Security Cameras With Lights",
+            "heading_size": "h1",
+            "content": "Surround your home with smart security and help stop crime before it happens.",
+            "description_size": "large",
+            "content_position": "middle-left",
+            "text_alignment": "left",
+            "content_size": "medium",
+            "color_slidebg": "rgba(0,0,0,0)",
+            "color_slidebg_opacity": 0,
+            "color_slidebg_blur": 0,
+            "color_text": "#2c2d2e",
+            "color_badge_bg": "#3f72e5",
+            "color_badge_text": "#ffffff",
+            "overlay_color": "rgba(0,0,0,0)",
+            "overlay_opacity": 0,
+            "overlay_gradient": "",
+            "button_1_text": "Buy Now - $45",
+            "button_1_color": "regular",
+            "button_1_link": "",
+            "use_text_button_1": false,
+            "button_2_text": "Learn more",
+            "button_2_color": "regular",
+            "button_2_link": "",
+            "use_text_button_2": true
+          }
+        }
+      },
+      "block_order": [
+        "fe3c4f31-61b1-4931-bde1-e46ecb72a090",
+        "0aa79bf4-864f-418d-a154-7f4dd2b2614b",
+        "164794776393e76b8e-2"
+      ],
+      "settings": {
+        "desktop_height": "desktop-height-image",
+        "mobile_height": "mobile-height-image",
+        "full_width": false,
+        "autoplay": true,
+        "autoplay_length": 10,
+        "transition": "zoom",
+        "controls": "arrows-with-numbers",
+        "disable_top_spacing": true,
+        "disable_bottom_spacing": true
+      }
+    },
+    "8f6ed916-ced8-44f6-9ef8-b60fd327ae31": {
+      "type": "spacer",
+      "settings": {
+        "spacer_mobile": 10,
+        "spacer_desktop": 30,
+        "border_separator": false,
+        "border_separator_full": false
+      }
+    },
+    "a7802e0a-30f4-4485-bf29-8868a637ca3e": {
+      "type": "promotion-blocks",
+      "blocks": {
+        "template--17918041129242__a7802e0a-30f4-4485-bf29-8868a637ca3e-1676376543ba0db665-0": {
+          "type": "promotion",
+          "settings": {
+            "image": "shopify://shop_images/pngtree-female-symbol-gender-3d-color-icon-vector-banner-temp-png-image_15576379.png",
+            "title": "Women's Health",
+            "paragraph": "Quick online consults\nand discreet treatments for women’s needs.",
+            "button_text": "Explore",
+            "button_link": "",
+            "block_link": ""
+          }
+        },
+        "template--17918041129242__a7802e0a-30f4-4485-bf29-8868a637ca3e-1676376543ba0db665-1": {
+          "type": "promotion",
+          "settings": {
+            "image": "shopify://shop_images/3d-illustration-male-gender-symbol-260nw-2425407097.png",
+            "title": "Men's Health",
+            "paragraph": "Fast online consults with evidence-based treatments, delivered.",
+            "button_text": "Explore",
+            "button_link": "",
+            "block_link": ""
+          }
+        },
+        "dc5645bd-875e-4093-a4d7-197e44af0a7e": {
+          "type": "promotion",
+          "settings": {
+            "image": "shopify://shop_images/Mental-Health-First-Aid-Awareness-Training-8-300x300.png",
+            "title": "Mental Health",
+            "paragraph": "Confidential care for anxiety, depression, and more — start online.",
+            "button_text": "Explore",
+            "button_link": "",
+            "block_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "template--17918041129242__a7802e0a-30f4-4485-bf29-8868a637ca3e-1676376543ba0db665-0",
+        "template--17918041129242__a7802e0a-30f4-4485-bf29-8868a637ca3e-1676376543ba0db665-1",
+        "dc5645bd-875e-4093-a4d7-197e44af0a7e"
+      ],
+      "settings": {
+        "mobile_swipe": false,
+        "image_ratio": "square",
+        "column_spacing": "large",
+        "color_bg": "#ffffff",
+        "color_text": "#303c43",
+        "color_link": "#3f72e5",
+        "disable_top_spacing": true,
+        "disable_bottom_spacing": true
+      }
+    },
+    "hero_sxrx_FrFAUC": {
+      "type": "hero-sxrx",
+      "name": "SXRX Hero Section",
+      "settings": {
+        "heading": "SXRX is committed to providing access to high-quality healthcare solutions at an affordable cost",
+        "subtext": "",
+        "logo": "shopify://shop_images/ChatGPT_Image_Nov_19_2025_11_47_48_AM_1.png",
+        "smalltext": "We connect you with esteemed medical providers who offer personalized, real-life strategies that cater to your unique health needs — all without straining your budget."
+      }
+    },
+    "health_split_section_hzDMXy": {
+      "type": "health-split-section",
+      "blocks": {
+        "women_feature_q4DQhJ": {
+          "type": "women_feature",
+          "settings": {
+            "text": "Birth Control"
+          }
+        },
+        "women_feature_QNcrfH": {
+          "type": "women_feature",
+          "settings": {
+            "text": "Hormone Harmony"
+          }
+        },
+        "women_feature_dmTdAY": {
+          "type": "women_feature",
+          "settings": {
+            "text": "Ease Menopause"
+          }
+        },
+        "women_feature_GLjVhg": {
+          "type": "women_feature",
+          "settings": {
+            "text": "Menstrual Health"
+          }
+        },
+        "women_feature_iG4GRh": {
+          "type": "women_feature",
+          "settings": {
+            "text": "Skincare"
+          }
+        },
+        "women_feature_UMKkQz": {
+          "type": "women_feature",
+          "settings": {
+            "text": "Sexual Desire"
+          }
+        },
+        "men_feature_4FfxUR": {
+          "type": "men_feature",
+          "settings": {
+            "text": "Performance Support"
+          }
+        },
+        "men_feature_3U7dLw": {
+          "type": "men_feature",
+          "settings": {
+            "text": "Premature Ejaculation"
+          }
+        },
+        "men_feature_VVkHKi": {
+          "type": "men_feature",
+          "settings": {
+            "text": "HIV Prevention"
+          }
+        },
+        "men_feature_qNYTmP": {
+          "type": "men_feature",
+          "settings": {
+            "text": "STI Defense"
+          }
+        },
+        "men_feature_rwFTbz": {
+          "type": "men_feature",
+          "settings": {
+            "text": "Low Testosterone"
+          }
+        },
+        "men_feature_jhCGi9": {
+          "type": "men_feature",
+          "settings": {
+            "text": "Hair Health"
+          }
+        }
+      },
+      "block_order": [
+        "women_feature_q4DQhJ",
+        "women_feature_QNcrfH",
+        "women_feature_dmTdAY",
+        "women_feature_GLjVhg",
+        "women_feature_iG4GRh",
+        "women_feature_UMKkQz",
+        "men_feature_4FfxUR",
+        "men_feature_3U7dLw",
+        "men_feature_VVkHKi",
+        "men_feature_qNYTmP",
+        "men_feature_rwFTbz",
+        "men_feature_jhCGi9"
+      ],
+      "name": "Health Split Section",
+      "settings": {
+        "w_title": "Women's Health",
+        "w_desc": "Personal, discreet care for cycles, hormones, and desire.",
+        "w_btn_text": "Learn more",
+        "w_btn_link": "",
+        "m_title": "Men's Health",
+        "m_desc": "Evidence-based treatments for performance and prevention.",
+        "m_btn_text": "Learn more",
+        "m_btn_link": ""
+      }
+    },
+    "mental_health_banner_Gd6JwL": {
+      "type": "mental-health-banner",
+      "name": "Mental Health Banner",
+      "settings": {
+        "heading": "Mental Health",
+        "subheading": "Confidential, clinically guided options for mood and focus (plus LDN/NAD+/glutathione as adjuncts).",
+        "button_text": "Learn more",
+        "button_link": ""
+      }
+    },
+    "process_steps_LT6ATj": {
+      "type": "process-steps",
+      "blocks": {
+        "step_qWDHNm": {
+          "type": "step",
+          "settings": {
+            "title": "AI-Powered Consultation",
+            "text": "Answer a quick medical questionnaire and get same-day provider review with prescriptions shipped fast via Priority Express."
+          }
+        },
+        "step_fCEJEX": {
+          "type": "step",
+          "settings": {
+            "title": "Get Virtual Appointment",
+            "text": "Schedule a private video visit for tailored guidance and prescriptions, with follow-ups and care notes sent to your inbox."
+          }
+        },
+        "step_EVY6cA": {
+          "type": "step",
+          "settings": {
+            "title": "Start Your Subscription",
+            "text": "Set up autoship for your treatment—choose plan, delivery cadence, and payment, with easy pause, skip, or cancel anytime."
+          }
+        }
+      },
+      "block_order": [
+        "step_qWDHNm",
+        "step_fCEJEX",
+        "step_EVY6cA"
+      ],
+      "name": "Process Steps",
+      "settings": {
+        "heading": "Our Process"
+      }
+    },
+    "testimonials_phone_zH6JbV": {
+      "type": "testimonials-phone",
+      "blocks": {
+        "testimonial_CVmUMr": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Emily R.",
+            "text": "\"I can't express how grateful I am for SXRX! The AI-powered consultation was seamless, and I received my prescription the same day. My treatment has changed my life!\"",
+            "stars": 4
+          }
+        },
+        "testimonial_FzBhLV": {
+          "type": "testimonial",
+          "settings": {
+            "name": "John M.",
+            "text": "\"The virtual consultation was incredibly convenient. The staff was professional and understanding. I felt heard and supported throughout the entire process.\"",
+            "stars": 4
+          }
+        },
+        "testimonial_XpgzBG": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Sarah T.",
+            "text": "\"SXRX has made managing my mental health so much easier. The subscription service is efficient, and I love that my medication arrives at my door. Highly recommend!\"",
+            "stars": 5
+          }
+        },
+        "testimonial_yxNbJp": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Michael W.",
+            "text": "\"I was hesitant at first, but the initial consultation was free! The team was fantastic and helped me find the right treatment for my needs. I'm feeling better than ever!\"",
+            "stars": 5
+          }
+        },
+        "testimonial_8qpVBj": {
+          "type": "testimonial",
+          "settings": {
+            "name": "David K.",
+            "text": "\"I have tried various treatments in the past, but nothing has worked as well as what SXRX provided. The team is attentive, and the results have been amazing!\"",
+            "stars": 5
+          }
+        },
+        "testimonial_7HJzrW": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Jessica L.",
+            "text": "\"The personalized care I received at SXRX is unmatched. They really took the time to understand my concerns, and I appreciate the follow-up after my treatment started.\"",
+            "stars": 5
+          }
+        },
+        "testimonial_axWQ7g": {
+          "type": "testimonial",
+          "settings": {
+            "name": "David K.",
+            "text": "\"I have tried various treatments in the past, but nothing has worked as well as what SXRX provided. The team is attentive, and the results have been amazing!\"",
+            "stars": 5
+          }
+        },
+        "testimonial_pRwT4M": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Natalie S.",
+            "text": "\"I love the flexibility of the membership options. SXRX has tailored my treatment plan perfectly to fit my lifestyle, and I couldn't be happier with the results.\"",
+            "stars": 5
+          }
+        },
+        "testimonial_WeCDNM": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Chris P.",
+            "text": "\"The customer service at SXRX is top-notch! They answered all my questions promptly and made me feel comfortable every step of the way. Highly recommend their services!\"",
+            "stars": 5
+          }
+        },
+        "testimonial_RdUMcx": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Lisa H.",
+            "text": "\"SXRX has truly transformed my approach to health. The virtual appointments are so easy to schedule, and the treatments are effective. I'm incredibly satisfied!\"",
+            "stars": 4
+          }
+        },
+        "testimonial_AVc7pQ": {
+          "type": "testimonial",
+          "settings": {
+            "name": "Mark J.",
+            "text": "\"I appreciate that SXRX accepts insurance. It made the process much more affordable for me. The team really cares about their patients and goes above and beyond!\"",
+            "stars": 4
+          }
+        }
+      },
+      "block_order": [
+        "testimonial_CVmUMr",
+        "testimonial_FzBhLV",
+        "testimonial_XpgzBG",
+        "testimonial_yxNbJp",
+        "testimonial_8qpVBj",
+        "testimonial_7HJzrW",
+        "testimonial_axWQ7g",
+        "testimonial_pRwT4M",
+        "testimonial_WeCDNM",
+        "testimonial_RdUMcx",
+        "testimonial_AVc7pQ"
+      ],
+      "name": "Phone Testimonials",
+      "settings": {
+        "heading": "Loved by patients",
+        "phone_image": "shopify://shop_images/ChatGPT_Image_Nov_19_2025_05_00_49_PM.png"
+      }
+    },
+    "image_with_text_7mY4Rw": {
+      "type": "image-with-text",
+      "blocks": {
+        "subheading_dq6EpW": {
+          "type": "subheading",
+          "settings": {
+            "text": "Add a tagline"
+          }
+        },
+        "heading_tbwTNQ": {
+          "type": "heading",
+          "settings": {
+            "text": "Ready to Get Started?",
+            "marker_style": "style1",
+            "heading_size": "h3",
+            "marker_color": "#fd6262"
+          }
+        },
+        "text_Fr6iVx": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Your new beginning starts here. Schedule your free 20 min virtual appointment today!</p>"
+          }
+        },
+        "button_4HUMFH": {
+          "type": "button",
+          "settings": {
+            "button_text": "Schedule an appointment",
+            "button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "subheading_dq6EpW",
+        "heading_tbwTNQ",
+        "text_Fr6iVx",
+        "button_4HUMFH"
+      ],
+      "name": "Image with text",
+      "settings": {
+        "image": "shopify://shop_images/Untitled_1.png",
+        "use_video": false,
+        "video": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+        "video_autoplay": false,
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "full_width": false,
+        "layout": "image_first",
+        "content_position": "text-left",
+        "column_spacing": "medium",
+        "color_bg": "#012050",
+        "color_text": "#ffffff",
+        "color_border": "#e2e2e2",
+        "disable_top_spacing": true,
+        "disable_bottom_spacing": false
+      }
+    },
+    "collapsible_content_FNHLcP": {
+      "type": "collapsible-content",
+      "blocks": {
+        "collapsible_tab_MiFy3F": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "What is the AI-Powered Consultation?",
+            "open": false,
+            "content": "<p>Personalized health recommendations and prescriptions from home.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_64dcze": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "How do I get my prescription?",
+            "open": false,
+            "content": "<p>Receive it immediately after your consultation.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_pVTWpz": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "What happens during a virtual consultation?",
+            "open": false,
+            "content": "<p>Discuss your health concerns with a licensed professional.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_qaNci3": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": " How do I schedule an appointment?",
+            "open": false,
+            "content": "<p>Use our website to choose a convenient time.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_rD8WyA": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "What types of treatments are available?",
+            "open": false,
+            "content": "<p>A range of options for men's sexual health, mental health, and more.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_P8dAzm": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "Do you take insurance?",
+            "open": false,
+            "content": "<p>Yes, coverage depends on the treatment and your plan.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_8FBGH3": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": " Do you deliver out of state?",
+            "open": false,
+            "content": "<p>Currently in California and Texas, with plans to expand.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_rJmzTT": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "How much are consultations?",
+            "open": false,
+            "content": "<p>Initial consultations are free; on-demand consultations cost $120.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_F9Yd4q": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "How much is the membership?",
+            "open": false,
+            "content": "<p>Membership costs vary; some treatments start as low as $50/month.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        },
+        "collapsible_tab_EKJEin": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": " How can I cancel or modify my subscription?",
+            "open": false,
+            "content": "<p>Manage it through your account or contact customer support.</p>",
+            "page": "",
+            "custom_liquid": ""
+          }
+        }
+      },
+      "block_order": [
+        "collapsible_tab_MiFy3F",
+        "collapsible_tab_64dcze",
+        "collapsible_tab_pVTWpz",
+        "collapsible_tab_qaNci3",
+        "collapsible_tab_rD8WyA",
+        "collapsible_tab_P8dAzm",
+        "collapsible_tab_8FBGH3",
+        "collapsible_tab_rJmzTT",
+        "collapsible_tab_F9Yd4q",
+        "collapsible_tab_EKJEin"
+      ],
+      "name": "Collapsible content",
+      "settings": {
+        "heading": "Frequently Asked Questions",
+        "marker_style": "style1",
+        "description": "",
+        "color_bg": "rgba(0,0,0,0)",
+        "color_heading": "#1a1c1d",
+        "marker_color": "#fd6262",
+        "color_text": "#2c2d2e",
+        "color_links": "#2c2d2e",
+        "color_border": "#dadce0",
+        "disable_top_spacing": false,
+        "disable_bottom_spacing": false
+      }
+    },
+    "featured_blog_eTykzE": {
+      "type": "featured-blog",
+      "name": "Blog posts",
+      "settings": {
+        "heading": "Featured blog",
+        "marker_style": "style1",
+        "description": "",
+        "blog": "news",
+        "post_limit": 3,
+        "columns_desktop": 3,
+        "mobile_swipe": false,
+        "image_ratio": "landscape",
+        "show_date": true,
+        "show_excerpt": true,
+        "show_read_more": true,
+        "show_view_all": true,
+        "marker_color": "#fd6262",
+        "disable_top_spacing": true,
+        "disable_bottom_spacing": false
+      }
+    }
+  },
+  "order": [
+    "spacer_9LrAfG",
+    "16479477632637c9a7",
+    "8f6ed916-ced8-44f6-9ef8-b60fd327ae31",
+    "a7802e0a-30f4-4485-bf29-8868a637ca3e",
+    "hero_sxrx_FrFAUC",
+    "health_split_section_hzDMXy",
+    "mental_health_banner_Gd6JwL",
+    "process_steps_LT6ATj",
+    "testimonials_phone_zH6JbV",
+    "image_with_text_7mY4Rw",
+    "collapsible_content_FNHLcP",
+    "featured_blog_eTykzE"
+  ]
+}

@@ -1,0 +1,40 @@
+{%- liquid
+  assign full_width = section.settings.full_width
+-%}
+<div class="row {% if full_width %}full-width-row-full{% endif %}">
+	<div class="small-12 columns">
+    {{ section.settings.custom_liquid }}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Custom liquid",
+  "tag": "section",
+  "class": "section-custom-liquid",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Make section full width",
+      "default": true
+    },
+    {
+      "type": "liquid",
+      "id": "custom_liquid",
+      "label": "Custom liquid",
+      "info": "Add app snippets or other Liquid code to create advanced customizations."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom liquid"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["*"],
+    "groups": [
+      "header", "footer"
+    ]
+  }
+}
+{% endschema %}

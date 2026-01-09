@@ -1,0 +1,208 @@
+<section class="phone-testimonial-section">
+  <div class="pt-container">
+    <div class="pt-heading">{{ section.settings.heading }}</div>
+
+    <div class="pt-wrapper">
+
+      <!-- Left Arrow -->
+      <button class="pt-arrow pt-left" onclick="ptScroll(-1)">
+        &#10094;
+      </button>
+
+      <!-- Testimonial slider -->
+      <div id="pt-carousel" class="pt-carousel">
+        {% for block in section.blocks %}
+          <div class="pt-card">
+            {% if block.settings.avatar %}
+              <img class="pt-avatar" src="{{ block.settings.avatar | img_url: '100x' }}" alt="">
+            {% endif %}
+            <p class="pt-name">{{ block.settings.name }}</p>
+            <p class="pt-text">{{ block.settings.text }}</p>
+
+            <div class="pt-stars">
+              {% for i in (1..block.settings.stars) %}
+                ★
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Right Arrow -->
+      <button class="pt-arrow pt-right" onclick="ptScroll(1)">
+        &#10095;
+      </button>
+
+      <!-- Phone mockup -->
+      <div class="pt-phone">
+        <img src="{{ section.settings.phone_image | img_url: '600x' }}" alt="">
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<style>
+.phone-testimonial-section {
+  padding: 80px 0;
+  background: #031c4a;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.pt-heading {
+  text-align: center;
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 50px;
+}
+
+.pt-container {
+  max-width: 1300px;
+  margin: auto;
+  position: relative;
+}
+
+.pt-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Carousel */
+.pt-carousel {
+  display: flex;
+  gap: 30px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  opacity: 0.4;
+
+  /* Hide scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.pt-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.pt-card {
+  min-width: 282px;
+  background: rgba(255,255,255,0.08);
+  padding: 22px;
+  border-radius: 18px;
+  backdrop-filter: blur(6px);
+}
+
+/* Arrows */
+.pt-arrow {
+  position: absolute;
+  top: 45%;
+  z-index: 10;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  border: none;
+  font-size: 28px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: 0.2s;
+}
+
+.pt-arrow:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.pt-left { left: 0; }
+.pt-right { right: 0; }
+
+/* Avatars and text */
+.pt-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.pt-name {
+  font-weight: 600;
+  font-size: 13px;
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+.pt-text {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.pt-stars {
+  color: #ff3d6a;
+  font-size: 14px;
+}
+
+/* Phone mockup */
+.pt-phone {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.pt-phone img {
+  width: 350px;
+  max-width: 80vw;
+}
+</style>
+
+
+<script>
+function ptScroll(direction) {
+  const el = document.getElementById('pt-carousel');
+  const scrollAmount = 300; // adjust slide amount
+  el.scrollLeft += scrollAmount * direction;
+}
+</script>
+
+
+{% schema %}
+{
+  "name": "Phone Testimonial Slider",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Loved by patients"
+    },
+    {
+      "type": "image_picker",
+      "id": "phone_image",
+      "label": "Phone Image"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        { "type": "image_picker", "id": "avatar", "label": "Avatar" },
+        { "type": "text", "id": "name", "label": "Name", "default": "John D." },
+        { "type": "textarea", "id": "text", "label": "Testimonial", "default": "Write testimonial here." },
+        { "type": "range", "id": "stars", "label": "Star Rating", "min": 1, "max": 5, "default": 5 }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Phone Testimonials" }
+  ]
+}
+{% endschema %}

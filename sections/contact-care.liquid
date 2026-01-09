@@ -1,0 +1,86 @@
+<style>
+  .care-wrapper {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    padding: 40px 0;
+  }
+  .care-left img {
+    max-width: 350px;
+  }
+  .care-right {
+    width: 100%;
+    max-width: 450px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  }
+  .care-form input,
+  .care-form textarea {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+  }
+  .care-options label {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 8px 14px;
+    margin: 6px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .care-submit {
+    background: #000;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    border: none;
+  }
+</style>
+
+<div class="care-wrapper">
+  <div class="care-left">
+    <img src="{{ section.settings.image | image_url }}">
+  </div>
+
+  <div class="care-right">
+    <h2>{{ section.settings.title }}</h2>
+    <p>{{ section.settings.subtitle }}</p>
+
+    <form class="care-form" method="post" action="/contact#contact_form">
+      <input type="text" name="contact[name]" placeholder="Full name" required>
+      <input type="email" name="contact[email]" placeholder="Email" required>
+      <input type="text" name="contact[phone]" placeholder="Phone (optional)">
+
+      <p>What do you need help with?</p>
+
+      <div class="care-options">
+        {% assign options = "Start a treatment/medical question,Order or subscription help,Insurance & billing,Technical issue,Partnerships & media,Other" | split: "," %}
+        {% for op in options %}
+        <label>
+          <input type="checkbox" name="contact[topic]" value="{{ op }}" style="margin-right:8px">
+          {{ op }}
+        </label>
+        {% endfor %}
+      </div>
+
+      <button class="care-submit" type="submit">Send message →</button>
+    </form>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Contact Care Section",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Title", "default": "Contact SXRX Care" },
+    { "type": "textarea", "id": "subtitle", "label": "Subtitle", "default": "We’re here to help with treatments, appointments, orders, and subscriptions." },
+    { "type": "image_picker", "id": "image", "label": "Image" }
+  ]
+}
+{% endschema %}
