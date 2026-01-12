@@ -1,5 +1,9 @@
 name: Deploy Shopify Theme
 
+# This workflow deploys Shopify theme files to Shopify store
+# Note: This workflow does not pull from GitHub, so no GitHub authentication is needed here
+# GitHub Personal Access Token is only needed for backend deployment workflow
+
 on:
   push:
     branches:
