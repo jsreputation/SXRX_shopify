@@ -302,6 +302,13 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 3rem 2rem;
+  box-sizing: border-box;
+}
+
+/* Ensure proper spacing within section-spacing wrapper */
+.section-spacing .questionnaire-page-container {
+  padding: 3rem 2rem;
+  margin: 0;
 }
 
 .questionnaire-header {

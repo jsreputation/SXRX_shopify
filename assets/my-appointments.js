@@ -5,6 +5,9 @@
   'use strict';
 
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
+  let currentCustomerId = null;
+  let appointmentsData = null;
+  let countdownIntervals = [];
   
   // Add professional styles
   function addStyles() {
@@ -33,28 +36,44 @@
         gap: 1rem;
       }
       
-      .appointments-header h1 {
+      .appointments-header-content h1 {
         font-size: 2rem;
         font-weight: 700;
         color: #1a1c1d;
-        margin: 0;
+        margin: 0 0 0.5rem 0;
         letter-spacing: -0.02em;
       }
       
-      .btn-primary {
+      .appointments-header-content p {
+        color: #666;
+        margin: 0;
+        font-size: 1rem;
+      }
+      
+      .appointments-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      
+      .btn {
         padding: 0.875rem 1.75rem;
-        background: linear-gradient(135deg, #3f72e5 0%, #5a8ef7 100%);
-        color: white;
         border: none;
         border-radius: 10px;
         cursor: pointer;
         font-weight: 600;
         font-size: 1rem;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(63, 114, 229, 0.3);
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
+        text-decoration: none;
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, #3f72e5 0%, #5a8ef7 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(63, 114, 229, 0.3);
       }
       
       .btn-primary:hover {
@@ -62,10 +81,60 @@
         box-shadow: 0 4px 12px rgba(63, 114, 229, 0.4);
       }
       
-      .btn-primary::before {
-        content: '+';
-        font-size: 1.25rem;
-        font-weight: 300;
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #1a1c1d;
+      }
+      
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+      
+      .btn-danger {
+        background: #dc2626;
+        color: white;
+      }
+      
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+      
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+      
+      .search-filter-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      
+      .search-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+      }
+      
+      .search-input:focus {
+        outline: none;
+        border-color: #3f72e5;
+        box-shadow: 0 0 0 3px rgba(63, 114, 229, 0.1);
+      }
+      
+      .filter-select {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        background: white;
+        cursor: pointer;
       }
       
       .patient-info-section {
@@ -213,6 +282,17 @@
         margin: 0;
       }
       
+      .appointment-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      
+      .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+      
       .status-badge {
         padding: 0.5rem 1rem;
         border-radius: 8px;
@@ -236,6 +316,17 @@
       .status-cancelled {
         background: #ffebee;
         color: #c62828;
+      }
+      
+      .countdown-timer {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #fff3e0;
+        color: #e65100;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
       }
       
       .appointment-details {
@@ -387,20 +478,82 @@
         margin: 0 0 1.5rem 0;
       }
       
-      .error-message a {
-        display: inline-block;
-        padding: 0.875rem 1.75rem;
-        background: #3f72e5;
-        color: white;
-        text-decoration: none;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
+      .error-message .btn {
+        margin: 0.5rem;
       }
       
-      .error-message a:hover {
-        background: #2d5cd4;
-        transform: translateY(-2px);
+      .hidden {
+        display: none !important;
+      }
+      
+      .refresh-btn {
+        position: relative;
+      }
+      
+      .refresh-btn.refreshing::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        right: 1rem;
+      }
+      
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .modal.show {
+        display: flex;
+      }
+      
+      .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      
+      .modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+      
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #666;
+      }
+      
+      .modal-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        justify-content: flex-end;
       }
       
       @media (max-width: 768px) {
@@ -413,8 +566,13 @@
           align-items: stretch;
         }
         
-        .appointments-header h1 {
-          font-size: 1.75rem;
+        .appointments-actions {
+          width: 100%;
+        }
+        
+        .btn {
+          flex: 1;
+          justify-content: center;
         }
         
         .appointments-section {
@@ -435,6 +593,14 @@
         
         .patient-details {
           grid-template-columns: 1fr;
+        }
+        
+        .search-filter-bar {
+          flex-direction: column;
+        }
+        
+        .search-input {
+          width: 100%;
         }
       }
     `;
@@ -458,11 +624,12 @@
           return;
         }
         
-        // Use stored customer ID
+        currentCustomerId = storedCustomerId;
         await loadAppointmentsForCustomer(storedCustomerId);
         return;
       }
 
+      currentCustomerId = customerId;
       await loadAppointmentsForCustomer(customerId);
     } catch (error) {
       console.error('Error loading appointments:', error);
@@ -482,8 +649,12 @@
     }
   }
 
-  async function loadAppointmentsForCustomer(customerId) {
+  async function loadAppointmentsForCustomer(customerId, showRetry = false) {
     try {
+      // Clear existing countdown intervals
+      countdownIntervals.forEach(interval => clearInterval(interval));
+      countdownIntervals = [];
+      
       // Build headers - try multiple auth methods
       const headers = {
         'Content-Type': 'application/json'
@@ -516,11 +687,11 @@
         console.error(`❌ [MY-APPOINTMENTS] Chart API error:`, chartResponse.status, errorData);
         
         if (chartResponse.status === 401 || chartResponse.status === 403) {
-          showError('Authentication failed. Please log in and try again.');
+          showError('Authentication failed. Please log in and try again.', showRetry);
           return;
         }
         if (chartResponse.status === 404) {
-          showError('No patient record found. Please complete a questionnaire or book an appointment first.');
+          showError('No patient record found. Please complete a questionnaire or book an appointment first.', showRetry);
           return;
         }
         throw new Error(errorData.message || 'Failed to load patient data');
@@ -549,11 +720,12 @@
 
       // Merge and deduplicate appointments
       const allAppointments = mergeAppointments(appointments, additionalAppointments);
+      appointmentsData = allAppointments;
       
       renderAppointments(allAppointments, chartData.patient);
     } catch (error) {
       console.error('Error loading appointments:', error);
-      showError('Error loading your appointments. Please try again later.');
+      showError('Error loading your appointments. Please try again later.', showRetry);
     }
   }
 
@@ -623,25 +795,48 @@
         ` : ''}
 
         <div class="appointments-header">
-          <h1>My Appointments</h1>
-          <button id="schedule-new-appointment-btn" class="btn-primary">
-            Schedule New Appointment
-          </button>
+          <div class="appointments-header-content">
+            <h1>My Appointments</h1>
+            <p>Manage and view all your scheduled appointments</p>
+          </div>
+          <div class="appointments-actions">
+            <button class="btn btn-secondary" onclick="window.refreshAppointments()" id="refresh-btn">
+              🔄 Refresh
+            </button>
+            <button class="btn btn-secondary" onclick="window.printAppointments()">
+              🖨️ Print
+            </button>
+            <button class="btn btn-secondary" onclick="window.exportAppointments()">
+              📥 Export
+            </button>
+            <button id="schedule-new-appointment-btn" class="btn btn-primary">
+              + Schedule New Appointment
+            </button>
+          </div>
+        </div>
+
+        <div class="search-filter-bar">
+          <input type="text" class="search-input" id="appointments-search" placeholder="Search appointments..." oninput="window.filterAppointments()">
+          <select class="filter-select" id="appointments-filter" onchange="window.filterAppointments()">
+            <option value="all">All Appointments</option>
+            <option value="upcoming">Upcoming Only</option>
+            <option value="past">Past Only</option>
+          </select>
         </div>
 
         ${upcoming.length > 0 ? `
-          <div class="appointments-section">
+          <div class="appointments-section" data-section="upcoming">
             <h2 style="color: #3f72e5;">Upcoming Appointments (${upcoming.length})</h2>
-            <div class="appointments-list">
+            <div class="appointments-list" id="upcoming-list">
               ${upcoming.map(apt => renderAppointmentCard(apt, true)).join('')}
             </div>
           </div>
         ` : ''}
 
         ${past.length > 0 ? `
-          <div class="appointments-section">
+          <div class="appointments-section" data-section="past">
             <h2 style="color: #666;">Past Appointments (${past.length})</h2>
-            <div class="appointments-list">
+            <div class="appointments-list" id="past-list">
               ${past.map(apt => renderAppointmentCard(apt, false)).join('')}
             </div>
           </div>
@@ -652,11 +847,26 @@
             <div class="no-appointments-icon">📅</div>
             <h3>No Appointments Found</h3>
             <p>You don't have any appointments scheduled yet.</p>
-            <button id="schedule-first-appointment-btn" class="btn-primary">
-              Schedule Your First Appointment
+            <button id="schedule-first-appointment-btn" class="btn btn-primary">
+              + Schedule Your First Appointment
             </button>
           </div>
         ` : ''}
+      </div>
+      
+      <!-- Cancel Confirmation Modal -->
+      <div id="cancel-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Cancel Appointment</h3>
+            <button class="close-btn" onclick="window.closeCancelModal()">&times;</button>
+          </div>
+          <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="window.closeCancelModal()">Keep Appointment</button>
+            <button class="btn btn-danger" id="confirm-cancel-btn">Yes, Cancel Appointment</button>
+          </div>
+        </div>
       </div>
     `;
     
@@ -672,6 +882,14 @@
     if (scheduleFirstBtn) {
       scheduleFirstBtn.addEventListener('click', handleScheduleClick);
     }
+    
+    // Initialize countdown timers for upcoming appointments
+    upcoming.forEach(apt => {
+      const startTime = new Date(apt.startTime || apt.StartTime || 0);
+      if (startTime > new Date()) {
+        initCountdown(apt.id || apt.ID, startTime);
+      }
+    });
   }
 
   function renderAppointmentCard(apt, isUpcoming) {
@@ -682,6 +900,7 @@
     const appointmentType = apt.appointmentType || apt.AppointmentType || 'Consultation';
     const meetingLink = apt.meetingLink || apt.MeetingLink || apt.telemedicineLink || 
                        (apt.notes && apt.notes.match(/https?:\/\/[^\s]+(?:meet\.google\.com|zoom\.us)[^\s]*/i)?.[0]) || null;
+    const appointmentId = apt.id || apt.ID || apt.AppointmentID || apt.AppointmentId;
     
     let statusClass = 'status-scheduled';
     if (status.includes('cancelled')) {
@@ -690,14 +909,25 @@
       statusClass = 'status-completed';
     }
     
+    const canCancel = isUpcoming && !status.includes('cancelled') && !status.includes('completed');
+    
     return `
-      <div class="appointment-card ${isUpcoming ? 'upcoming' : ''}">
+      <div class="appointment-card ${isUpcoming ? 'upcoming' : ''}" data-appointment-id="${appointmentId}" data-searchable="${appointmentName.toLowerCase()} ${appointmentType.toLowerCase()}">
         <div class="appointment-header">
           <div class="appointment-title">
             <h3>${appointmentName}</h3>
             <p class="appointment-type">${appointmentType}</p>
+            ${isUpcoming ? `<div class="countdown-timer" id="countdown-${appointmentId}"></div>` : ''}
           </div>
-          <span class="status-badge ${statusClass}">${status}</span>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+            <span class="status-badge ${statusClass}">${status}</span>
+            ${canCancel ? `
+              <div class="appointment-actions">
+                <button class="btn btn-sm btn-secondary" onclick="window.addToCalendar('${appointmentId}')">📅 Add to Calendar</button>
+                <button class="btn btn-sm btn-danger" onclick="window.showCancelModal('${appointmentId}')">Cancel</button>
+              </div>
+            ` : ''}
+          </div>
         </div>
         
         <div class="appointment-details">
@@ -727,6 +957,211 @@
     `;
   }
 
+  function initCountdown(appointmentId, startTime) {
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = startTime - now;
+      
+      if (diff <= 0) {
+        const element = document.getElementById(`countdown-${appointmentId}`);
+        if (element) {
+          element.textContent = 'Appointment time has arrived';
+        }
+        return;
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      const element = document.getElementById(`countdown-${appointmentId}`);
+      if (element) {
+        if (days > 0) {
+          element.textContent = `⏰ ${days}d ${hours}h ${minutes}m until appointment`;
+        } else if (hours > 0) {
+          element.textContent = `⏰ ${hours}h ${minutes}m until appointment`;
+        } else {
+          element.textContent = `⏰ ${minutes}m until appointment`;
+        }
+      }
+    };
+    
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000); // Update every minute
+    countdownIntervals.push(interval);
+  }
+
+  function filterAppointments() {
+    const searchTerm = (document.getElementById('appointments-search')?.value || '').toLowerCase();
+    const filterType = document.getElementById('appointments-filter')?.value || 'all';
+    
+    const sections = document.querySelectorAll('.appointments-section[data-section]');
+    sections.forEach(section => {
+      const sectionType = section.getAttribute('data-section');
+      if (filterType !== 'all' && sectionType !== filterType) {
+        section.classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+      
+      const cards = section.querySelectorAll('[data-searchable]');
+      cards.forEach(card => {
+        const searchable = card.getAttribute('data-searchable') || '';
+        const matchesSearch = !searchTerm || searchable.includes(searchTerm);
+        card.style.display = matchesSearch ? '' : 'none';
+      });
+    });
+  }
+
+  window.showCancelModal = function(appointmentId) {
+    const modal = document.getElementById('cancel-modal');
+    if (modal) {
+      modal.classList.add('show');
+      const confirmBtn = document.getElementById('confirm-cancel-btn');
+      if (confirmBtn) {
+        confirmBtn.onclick = () => cancelAppointment(appointmentId);
+      }
+    }
+  };
+
+  window.closeCancelModal = function() {
+    const modal = document.getElementById('cancel-modal');
+    if (modal) {
+      modal.classList.remove('show');
+    }
+  };
+
+  async function cancelAppointment(appointmentId) {
+    if (!currentCustomerId) {
+      alert('Unable to cancel appointment. Please refresh the page.');
+      return;
+    }
+    
+    try {
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      const storefrontToken = getStorefrontToken();
+      const shopifyCustomerToken = window.Shopify?.customerAccessToken || 
+                                  sessionStorage.getItem('shopify_customer_access_token') ||
+                                  localStorage.getItem('shopify_customer_access_token');
+      
+      if (storefrontToken) {
+        headers['Authorization'] = `Bearer ${storefrontToken}`;
+      } else if (shopifyCustomerToken) {
+        headers['shopify_access_token'] = shopifyCustomerToken;
+      }
+      
+      const response = await fetch(`${BACKEND_API}/api/shopify/customers/${currentCustomerId}/appointments/${appointmentId}/cancel`, {
+        method: 'PUT',
+        headers: headers
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to cancel appointment');
+      }
+      
+      window.closeCancelModal();
+      alert('Appointment cancelled successfully.');
+      await loadAppointmentsForCustomer(currentCustomerId);
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      alert(`Failed to cancel appointment: ${error.message || 'Please try again later.'}`);
+    }
+  }
+
+  window.addToCalendar = function(appointmentId) {
+    if (!appointmentsData) return;
+    
+    const appointment = appointmentsData.find(apt => (apt.id || apt.ID || apt.AppointmentID || apt.AppointmentId) === appointmentId);
+    if (!appointment) return;
+    
+    const startTime = new Date(appointment.startTime || appointment.StartTime || 0);
+    const endTime = new Date(appointment.endTime || appointment.EndTime || startTime.getTime() + 30 * 60000);
+    const appointmentName = appointment.appointmentName || appointment.AppointmentName || 'Appointment';
+    
+    // Create iCal format
+    const formatDate = (date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const icalContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//SXRX//Appointment//EN',
+      'BEGIN:VEVENT',
+      `DTSTART:${formatDate(startTime)}`,
+      `DTEND:${formatDate(endTime)}`,
+      `SUMMARY:${appointmentName}`,
+      `DESCRIPTION:${appointment.notes || ''}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    
+    const blob = new Blob([icalContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `appointment-${appointmentId}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  window.refreshAppointments = async function() {
+    if (!currentCustomerId) return;
+    const btn = document.getElementById('refresh-btn');
+    if (btn) {
+      btn.classList.add('refreshing');
+      btn.disabled = true;
+    }
+    await loadAppointmentsForCustomer(currentCustomerId);
+    if (btn) {
+      btn.classList.remove('refreshing');
+      btn.disabled = false;
+    }
+  };
+
+  window.filterAppointments = filterAppointments;
+
+  window.printAppointments = function() {
+    window.print();
+  };
+
+  window.exportAppointments = function() {
+    if (!appointmentsData || appointmentsData.length === 0) {
+      alert('No appointments to export');
+      return;
+    }
+    
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      appointments: appointmentsData.map(apt => ({
+        id: apt.id || apt.ID,
+        appointmentName: apt.appointmentName || apt.AppointmentName,
+        appointmentType: apt.appointmentType || apt.AppointmentType,
+        startTime: apt.startTime || apt.StartTime,
+        endTime: apt.endTime || apt.EndTime,
+        status: apt.status || apt.appointmentStatus || apt.AppointmentStatus,
+        notes: apt.notes || apt.Notes,
+        meetingLink: apt.meetingLink || apt.MeetingLink
+      }))
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `appointments-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   function handleScheduleClick(event) {
     event.preventDefault();
     
@@ -742,7 +1177,7 @@
     }
   }
 
-  function showError(message) {
+  function showError(message, showRetry = false) {
     const container = document.getElementById('my-appointments-container');
     if (container) {
       addStyles();
@@ -750,7 +1185,10 @@
         <div class="error-message">
           <h2>⚠️ Unable to Load Appointments</h2>
           <p>${message}</p>
-          <a href="/account/login">Please log in to view your appointments</a>
+          ${showRetry && currentCustomerId ? `
+            <button class="btn btn-primary" onclick="window.refreshAppointments()">🔄 Retry</button>
+          ` : ''}
+          <a href="/account/login" class="btn btn-primary">Please log in to view your appointments</a>
         </div>
       `;
     }

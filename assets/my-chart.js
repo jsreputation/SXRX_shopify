@@ -5,6 +5,8 @@
   'use strict';
 
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
+  let currentCustomerId = null;
+  let chartData = null;
   
   // Add professional styles
   function addStyles() {
@@ -23,12 +25,17 @@
       }
       
       .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 2.5rem;
         padding-bottom: 1.5rem;
         border-bottom: 2px solid #e8e8e8;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
       
-      .chart-header h1 {
+      .chart-header-content h1 {
         font-size: 2rem;
         font-weight: 700;
         color: #1a1c1d;
@@ -36,10 +43,88 @@
         letter-spacing: -0.02em;
       }
       
-      .chart-header p {
+      .chart-header-content p {
         color: #666;
         margin: 0;
         font-size: 1rem;
+      }
+      
+      .chart-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, #3f72e5 0%, #5a8ef7 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(63, 114, 229, 0.3);
+      }
+      
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(63, 114, 229, 0.4);
+      }
+      
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #1a1c1d;
+      }
+      
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+      
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+      
+      .search-filter-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      
+      .search-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+      }
+      
+      .search-input:focus {
+        outline: none;
+        border-color: #3f72e5;
+        box-shadow: 0 0 0 3px rgba(63, 114, 229, 0.1);
+      }
+      
+      .filter-select {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        background: white;
+        cursor: pointer;
       }
       
       .section-card {
@@ -330,25 +415,47 @@
         margin: 0 0 1.5rem 0;
       }
       
-      .error-message a {
-        display: inline-block;
-        padding: 0.75rem 1.5rem;
-        background: #3f72e5;
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.3s ease;
+      .error-message .btn {
+        margin: 0.5rem;
       }
       
-      .error-message a:hover {
-        background: #2d5cd4;
-        transform: translateY(-2px);
+      .hidden {
+        display: none !important;
+      }
+      
+      .refresh-btn {
+        position: relative;
+      }
+      
+      .refresh-btn.refreshing::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        right: 1rem;
       }
       
       @media (max-width: 768px) {
         .chart-wrapper {
           padding: 1rem;
+        }
+        
+        .chart-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        
+        .chart-actions {
+          width: 100%;
+        }
+        
+        .btn {
+          flex: 1;
+          justify-content: center;
         }
         
         .section-card {
@@ -361,6 +468,14 @@
         
         .patient-details {
           grid-template-columns: 1fr;
+        }
+        
+        .search-filter-bar {
+          flex-direction: column;
+        }
+        
+        .search-input {
+          width: 100%;
         }
       }
     `;
@@ -384,11 +499,12 @@
           return;
         }
         
-        // Use stored customer ID
+        currentCustomerId = storedCustomerId;
         await loadChartForCustomer(storedCustomerId);
         return;
       }
 
+      currentCustomerId = customerId;
       await loadChartForCustomer(customerId);
     } catch (error) {
       console.error('Error loading chart:', error);
@@ -408,7 +524,7 @@
     }
   }
 
-  async function loadChartForCustomer(customerId) {
+  async function loadChartForCustomer(customerId, showRetry = false) {
     try {
       // Build headers - try multiple auth methods
       const headers = {
@@ -442,17 +558,18 @@
         console.error(`❌ [MY-CHART] API error:`, response.status, errorData);
         
         if (response.status === 401 || response.status === 403) {
-          showError('Authentication failed. Please log in and try again.');
+          showError('Authentication failed. Please log in and try again.', showRetry);
           return;
         }
         if (response.status === 404) {
-          showError('No chart found. Please complete a questionnaire or book an appointment first.');
+          showError('No chart found. Please complete a questionnaire or book an appointment first.', showRetry);
           return;
         }
         throw new Error(errorData.message || `Failed to load chart data (${response.status})`);
       }
 
       const data = await response.json();
+      chartData = data;
       console.log(`✅ [MY-CHART] Chart data loaded:`, {
         hasPatient: !!data.patient,
         documentsCount: data.totalDocuments || 0,
@@ -462,7 +579,7 @@
       renderChart(data);
     } catch (error) {
       console.error('❌ [MY-CHART] Error loading chart:', error);
-      showError(`Error loading your medical chart: ${error.message || 'Please try again later.'}`);
+      showError(`Error loading your medical chart: ${error.message || 'Please try again later.'}`, showRetry);
     }
   }
 
@@ -476,8 +593,34 @@
     const html = `
       <div class="chart-wrapper">
         <div class="chart-header">
-          <h1>My Medical Chart</h1>
-          <p>Your complete medical records and health information</p>
+          <div class="chart-header-content">
+            <h1>My Medical Chart</h1>
+            <p>Your complete medical records and health information</p>
+          </div>
+          <div class="chart-actions">
+            <button class="btn btn-secondary" onclick="window.refreshChart()" id="refresh-btn">
+              🔄 Refresh
+            </button>
+            <button class="btn btn-secondary" onclick="window.printChart()">
+              🖨️ Print
+            </button>
+            <button class="btn btn-secondary" onclick="window.exportChart()">
+              📥 Export
+            </button>
+            <a href="/pages/my-appointments" class="btn btn-primary">
+              📅 View Appointments
+            </a>
+          </div>
+        </div>
+        
+        <div class="search-filter-bar">
+          <input type="text" class="search-input" id="chart-search" placeholder="Search documents, prescriptions..." oninput="window.filterChart()">
+          <select class="filter-select" id="chart-filter" onchange="window.filterChart()">
+            <option value="all">All Items</option>
+            <option value="documents">Documents Only</option>
+            <option value="prescriptions">Prescriptions Only</option>
+            <option value="appointments">Appointments Only</option>
+          </select>
         </div>
         
         ${patientInfo.firstName || patientInfo.lastName || patientInfo.email ? `
@@ -513,7 +656,7 @@
         ` : ''}
         
         ${questionnaire.submittedAt ? `
-          <div class="questionnaire-card section-card">
+          <div class="questionnaire-card section-card" data-type="questionnaire">
             <h2>Questionnaire</h2>
             <div class="document-meta">
               <div class="meta-item">
@@ -538,11 +681,11 @@
           </div>
         ` : ''}
         
-        <div class="section-card">
-          <h2>Medical Documents</h2>
-          <div class="document-grid">
+        <div class="section-card" data-type="documents" id="documents-section">
+          <h2>Medical Documents (${data.documents?.length || 0})</h2>
+          <div class="document-grid" id="documents-grid">
             ${data.documents && data.documents.length > 0 ? data.documents.map(doc => `
-              <div class="document-card">
+              <div class="document-card" data-searchable="${(doc.name || '').toLowerCase()} ${(doc.notes || '').toLowerCase()}">
                 <h3>${doc.name || 'Document'}</h3>
                 <div class="document-meta">
                   <div class="meta-item">
@@ -570,11 +713,11 @@
           </div>
         </div>
         
-        <div class="section-card">
-          <h2>Prescriptions</h2>
-          <div class="prescription-grid">
+        <div class="section-card" data-type="prescriptions" id="prescriptions-section">
+          <h2>Prescriptions (${data.prescriptions?.length || 0})</h2>
+          <div class="prescription-grid" id="prescriptions-grid">
             ${data.prescriptions && data.prescriptions.length > 0 ? data.prescriptions.map(rx => `
-              <div class="prescription-card">
+              <div class="prescription-card" data-searchable="${(rx.name || '').toLowerCase()} ${(rx.pharmacy || '').toLowerCase()}">
                 <h3>${rx.name || 'Prescription'}</h3>
                 <div class="prescription-meta">
                   <div class="meta-item">
@@ -604,14 +747,14 @@
         </div>
 
         ${data.appointments && data.appointments.length > 0 ? `
-          <div class="section-card">
-            <h2>Recent Appointments</h2>
-            <div class="appointment-grid">
+          <div class="section-card" data-type="appointments" id="appointments-section">
+            <h2>Recent Appointments (${data.appointments.length})</h2>
+            <div class="appointment-grid" id="appointments-grid">
               ${data.appointments.slice(0, 3).map(apt => {
                 const startTime = new Date(apt.startTime || 0);
                 const isUpcoming = startTime > new Date();
                 return `
-                  <div class="appointment-card" style="background: ${isUpcoming ? '#f0f7ff' : '#fafafa'}; border-color: ${isUpcoming ? '#3f72e5' : '#e8e8e8'};">
+                  <div class="appointment-card" data-searchable="${(apt.appointmentName || '').toLowerCase()}" style="background: ${isUpcoming ? '#f0f7ff' : '#fafafa'}; border-color: ${isUpcoming ? '#3f72e5' : '#e8e8e8'};">
                     <h3>${apt.appointmentName || 'Appointment'}</h3>
                     <div class="document-meta">
                       <div class="meta-item">
@@ -649,7 +792,77 @@
     container.innerHTML = html;
   }
 
-  function showError(message) {
+  function filterChart() {
+    const searchTerm = (document.getElementById('chart-search')?.value || '').toLowerCase();
+    const filterType = document.getElementById('chart-filter')?.value || 'all';
+    
+    // Filter sections
+    const sections = document.querySelectorAll('.section-card[data-type]');
+    sections.forEach(section => {
+      const sectionType = section.getAttribute('data-type');
+      if (filterType !== 'all' && sectionType !== filterType) {
+        section.classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+      
+      // Filter items within section
+      const items = section.querySelectorAll('[data-searchable]');
+      items.forEach(item => {
+        const searchable = item.getAttribute('data-searchable') || '';
+        const matchesSearch = !searchTerm || searchable.includes(searchTerm);
+        item.style.display = matchesSearch ? '' : 'none';
+      });
+    });
+  }
+
+  window.refreshChart = async function() {
+    if (!currentCustomerId) return;
+    const btn = document.getElementById('refresh-btn');
+    if (btn) {
+      btn.classList.add('refreshing');
+      btn.disabled = true;
+    }
+    await loadChartForCustomer(currentCustomerId);
+    if (btn) {
+      btn.classList.remove('refreshing');
+      btn.disabled = false;
+    }
+  };
+
+  window.filterChart = filterChart;
+
+  window.printChart = function() {
+    window.print();
+  };
+
+  window.exportChart = function() {
+    if (!chartData) {
+      alert('No data to export');
+      return;
+    }
+    
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      patient: chartData.patient,
+      questionnaire: chartData.questionnaire,
+      documents: chartData.documents,
+      prescriptions: chartData.prescriptions,
+      appointments: chartData.appointments
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `medical-chart-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  function showError(message, showRetry = false) {
     const container = document.getElementById('my-chart-container');
     if (container) {
       addStyles();
@@ -657,7 +870,10 @@
         <div class="error-message">
           <h2>⚠️ Unable to Load Chart</h2>
           <p>${message}</p>
-          <a href="/account/login">Please log in to view your chart</a>
+          ${showRetry && currentCustomerId ? `
+            <button class="btn btn-primary" onclick="window.refreshChart()">🔄 Retry</button>
+          ` : ''}
+          <a href="/account/login" class="btn btn-primary">Please log in to view your chart</a>
         </div>
       `;
     }

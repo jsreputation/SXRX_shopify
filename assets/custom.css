@@ -184,4 +184,280 @@ section.phone-testimonial-section {
 .sub-footer {
     margin-top: 0px!important;
 }
+
+/* Custom Content Section - Used for My Chart and My Appointments */
+.custom-content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.custom-content-heading {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1c1d;
+    margin: 0 0 2rem 0;
+    text-align: center;
+    letter-spacing: -0.02em;
+}
+
+.custom-content-body {
+    width: 100%;
+}
+
+/* My Chart and My Appointments Container Padding */
+.my-chart-container,
+.my-appointments-container {
+    padding: 0;
+    margin: 0;
+}
+
+/* Ensure proper spacing for page containers */
+#my-chart-container,
+#my-appointments-container {
+    min-height: 400px;
+}
+
+/* Questionnaire Page Container - Ensure proper spacing */
+.questionnaire-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+@media (max-width: 768px) {
+    .custom-content-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .custom-content-heading {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .questionnaire-page-container {
+        padding: 2rem 1rem;
+    }
+}
+
+/* Page Content Width - Ensure consistent padding */
+.page-content-width {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Section Spacing Improvements */
+.section-spacing {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .section-spacing {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+}
+
+/* Main Page Section - Better spacing */
+.main-page .section-spacing {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .main-page .section-spacing {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+}
+
+/* Blog Post Detail - Consistent padding */
+.blog-post-detail {
+    padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+    .blog-post-detail {
+        padding: 0 2rem;
+    }
+}
+
+/* Template Header - Ensure proper spacing */
+.template-header {
+    margin-bottom: 2rem;
+}
+
+/* Breadcrumbs - Proper spacing */
+.breadcrumbs {
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .breadcrumbs {
+        padding: 1.5rem 0;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Account Pages - Better spacing */
+.main-account,
+.main-login,
+.main-addresses,
+.main-activate-account,
+.main-reset-password {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .main-account,
+    .main-login,
+    .main-addresses,
+    .main-activate-account,
+    .main-reset-password {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Contact Form - Proper spacing */
+.contact-form,
+#contact {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .contact-form,
+    #contact {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Rich Text Sections - Consistent padding */
+.rich-text {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .rich-text {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Template Header - Consistent spacing */
+.template-header {
+    padding: 1.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .template-header {
+        padding: 2rem;
+    }
+}
+
+/* Row and Column Padding - Ensure consistent spacing */
+.row {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    .row {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+/* Small-12 columns - Proper padding */
+.small-12.columns {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Cart Page - Better spacing */
+.main-cart {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .main-cart {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Search Page - Proper spacing */
+.main-search {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .main-search {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Blog Pages - Consistent spacing */
+.main-blog,
+.main-article {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .main-blog,
+    .main-article {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Collection Pages - Better spacing */
+.main-collection-product-grid {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .main-collection-product-grid {
+        padding: 3rem 2rem;
+    }
+}
+
+/* Order Page - Proper spacing */
+.main-order {
+    padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+    .main-order {
+        padding: 3rem 2rem;
+    }
+}
+
+/* 404 Page - Consistent spacing */
+.main-404 {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .main-404 {
+        padding: 4rem 2rem;
+    }
+}
+
+/* Ensure all page containers have proper max-width and centering */
+.page-container,
+.page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+    .page-container,
+    .page-wrapper {
+        padding: 0 2rem;
+    }
+}
 }
