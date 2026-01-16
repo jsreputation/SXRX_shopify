@@ -4,7 +4,7 @@
 (function() {
   'use strict';
 
-  const BACKEND_API = 'https://api.sxrx.us'; // Update with your backend URL
+  const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
 
   // Check if customer has completed questionnaire
   async function checkQuestionnaireStatus(customerId, productId) {
@@ -114,17 +114,30 @@
       const result = await response.json();
 
       if (result.success) {
-        if (result.action === 'allow_purchase') {
-          // No red flags - store completion and redirect back to product
+        if (result.action === 'proceed_to_checkout') {
+          // No red flags - prescription created, redirect to checkout
           sessionStorage.setItem(`questionnaire_completed_${productId}`, 'true');
           sessionStorage.setItem(`patient_chart_url_${productId}`, result.patientChartUrl || '');
+          sessionStorage.setItem(`prescription_id_${productId}`, result.prescriptionId || '');
           
-          // Redirect back to product page
-          const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
-          window.location.href = redirectUrl + '?questionnaire_completed=true';
+          // Get product variant ID and redirect to checkout
+          const variantId = urlParams.get('variant_id') || getVariantIdFromProduct(productId);
+          if (variantId) {
+            // Add product to cart and redirect to checkout
+            addToCartAndCheckout(productId, variantId, purchaseType);
+          } else {
+            // Fallback: redirect back to product page with completion flag
+            const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
+            window.location.href = redirectUrl + '?questionnaire_completed=true&action=proceed_to_checkout';
+          }
         } else if (result.action === 'schedule_consultation') {
           // Red flags detected - show consultation scheduling
           showConsultationScheduling(result);
+        } else {
+          // Fallback for other actions (e.g., 'allow_purchase' for backward compatibility)
+          sessionStorage.setItem(`questionnaire_completed_${productId}`, 'true');
+          const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
+          window.location.href = redirectUrl + '?questionnaire_completed=true';
         }
       } else {
         showMessage('Error processing questionnaire. Please try again.', 'error');
@@ -142,16 +155,99 @@
     return '';
   }
 
+  // Get variant ID from product (helper function)
+  function getVariantIdFromProduct(productId) {
+    // Try to get variant ID from URL params or page
+    const urlParams = new URLSearchParams(window.location.search);
+    const variantId = urlParams.get('variant_id');
+    if (variantId) return variantId;
+    
+    // Try to get from product form on page
+    const variantInput = document.querySelector('input[name="id"]');
+    if (variantInput) return variantInput.value;
+    
+    // Try to get from product data attribute
+    const productForm = document.querySelector('form[action*="/cart/add"]');
+    if (productForm) {
+      const hiddenVariantInput = productForm.querySelector('input[name="id"]');
+      if (hiddenVariantInput) return hiddenVariantInput.value;
+    }
+    
+    return null;
+  }
+
+  // Add product to cart and redirect to checkout
+  async function addToCartAndCheckout(productId, variantId, purchaseType) {
+    try {
+      // Add product to cart via Shopify Cart API
+      const response = await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: variantId,
+          quantity: 1,
+          properties: {
+            'Purchase Type': purchaseType === 'subscription' ? 'Subscription (Monthly)' : 'One-Time Purchase',
+            '_purchaseType': purchaseType,
+            '_questionnaire_completed': 'true'
+          }
+        })
+      });
+
+      if (response.ok) {
+        // Redirect to checkout
+        window.location.href = '/checkout';
+      } else {
+        // Fallback: redirect to cart
+        window.location.href = '/cart';
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      // Fallback: redirect to product page
+      const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
+      window.location.href = redirectUrl + '?questionnaire_completed=true&action=proceed_to_checkout';
+    }
+  }
+
   // Show consultation scheduling
   function showConsultationScheduling(data) {
-    const container = document.getElementById('questionnaire-result');
-    if (!container) return;
+    let container = document.getElementById('questionnaire-result');
+    if (!container) {
+      // Create container if it doesn't exist
+      const resultContainer = document.createElement('div');
+      resultContainer.id = 'questionnaire-result';
+      
+      // Try to insert after quiz or at end of page
+      const quizContainer = document.querySelector('[data-revenuehunt-quiz]') || document.querySelector('.questionnaire-container') || document.querySelector('.questionnaire-content');
+      if (quizContainer) {
+        quizContainer.parentNode.insertBefore(resultContainer, quizContainer.nextSibling);
+      } else {
+        document.body.appendChild(resultContainer);
+      }
+      
+      // Get the newly created container
+      container = document.getElementById('questionnaire-result');
+    }
+
+    const availableSlots = data.availableSlots || [];
+    let slotsHtml = '';
+    
+    if (availableSlots.length > 0) {
+      slotsHtml = '<div class="available-slots"><strong>Available appointment slots:</strong><ul>';
+      availableSlots.slice(0, 5).forEach(slot => {
+        slotsHtml += `<li>${slot.date} at ${slot.startTime} - ${slot.provider || 'Medical Director'}</li>`;
+      });
+      slotsHtml += '</ul></div>';
+    }
 
     const message = `
-      <div class="consultation-prompt" style="text-align: center; padding: 2rem;">
+      <div class="consultation-prompt">
         <h3>Consultation Required</h3>
-        <p>Based on your questionnaire, we recommend scheduling a consultation with our medical director.</p>
-        <button id="schedule-consultation-btn" class="btn btn-primary" style="margin-top: 1rem;">
+        <p>A consultation with our medical director is required before we can proceed with your order.</p>
+        ${slotsHtml}
+        <button id="schedule-consultation-btn" class="btn btn-primary">
           Schedule Consultation
         </button>
       </div>
@@ -171,31 +267,33 @@
 
   // Initialize Cowlendar booking
   function initCowlendarBooking(consultationData) {
-    // Cowlendar should be embedded on the page
-    const cowlendarEmbed = document.querySelector('[data-cowlendar-app]');
+    // Redirect to appointment booking product page
+    // Cowlendar will transform "Add to Cart" to "Book Now" button
+    const appointmentProductUrl = '/products/appointment-booking';
     
-    if (cowlendarEmbed) {
-      // Pass consultation data to Cowlendar
-      window.cowlendarData = {
-        patientId: consultationData.patientId,
-        providerId: consultationData.providerId,
-        practiceId: consultationData.practiceId,
-        availableSlots: consultationData.availableSlots || []
-      };
-      
-      // Trigger Cowlendar modal
-      cowlendarEmbed.click();
-    } else {
-      // Redirect to appointment booking page or homepage schedule button
-      window.location.href = '/?schedule=true';
+    // Store consultation data for potential use
+    if (consultationData.patientId) {
+      sessionStorage.setItem('consultation_patientId', consultationData.patientId);
     }
+    if (consultationData.providerId) {
+      sessionStorage.setItem('consultation_providerId', consultationData.providerId);
+    }
+    if (consultationData.practiceId) {
+      sessionStorage.setItem('consultation_practiceId', consultationData.practiceId);
+    }
+    if (consultationData.availableSlots && consultationData.availableSlots.length > 0) {
+      sessionStorage.setItem('consultation_availableSlots', JSON.stringify(consultationData.availableSlots));
+    }
+    
+    // Redirect to appointment booking page
+    window.location.href = appointmentProductUrl;
   }
 
   // Show status message
   function showMessage(message, type) {
     const container = document.getElementById('questionnaire-result') || document.getElementById('questionnaire-status');
     if (container) {
-      container.innerHTML = `<p class="message ${type}" style="padding: 1rem; text-align: center;">${message}</p>`;
+      container.innerHTML = `<p class="message ${type}">${message}</p>`;
       container.style.display = 'block';
     }
   }
@@ -204,6 +302,20 @@
   function enableAddToCartAfterCompletion() {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('product') || document.querySelector('[data-product-id]')?.getAttribute('data-product-id');
+    const action = urlParams.get('action');
+    
+    // If action is proceed_to_checkout, we should have already redirected to checkout
+    // This is a fallback in case user returns to product page
+    if (action === 'proceed_to_checkout') {
+      // Show message that they can proceed to checkout
+      const statusDiv = document.getElementById('questionnaire-completion-status');
+      if (statusDiv) {
+        statusDiv.setAttribute('data-completed', 'true');
+        statusDiv.innerHTML = '<p>Questionnaire completed. Prescription created. You can proceed to checkout.</p>';
+        statusDiv.style.display = 'block';
+      }
+      return;
+    }
     
     if (productId && sessionStorage.getItem(`questionnaire_completed_${productId}`) === 'true') {
       // Hide purchase button, show add to cart
@@ -219,7 +331,7 @@
       const statusDiv = document.getElementById('questionnaire-completion-status');
       if (statusDiv) {
         statusDiv.setAttribute('data-completed', 'true');
-        statusDiv.innerHTML = '<p style="color: green; padding: 0.5rem;">✓ Questionnaire completed. You can now add to cart.</p>';
+        statusDiv.innerHTML = '<p>Questionnaire completed. You can now add to cart.</p>';
         statusDiv.style.display = 'block';
       }
 

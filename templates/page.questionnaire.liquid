@@ -5,8 +5,8 @@
 
 {{ 'questionnaire-styles.css' | asset_url | stylesheet_tag }}
 
-<div class="questionnaire-page-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
-  <div class="questionnaire-header" style="text-align: center; margin-bottom: 2rem;">
+<div class="questionnaire-page-container">
+  <div class="questionnaire-header">
     <h1>Medical Questionnaire</h1>
     <p>Please complete the questionnaire below to proceed with your purchase.</p>
   </div>
@@ -14,13 +14,13 @@
   <div id="questionnaire-result" style="display: none;"></div>
 
   <div class="questionnaire-content" id="questionnaire-content">
-    <div class="questionnaire-loading" style="text-align: center; padding: 3rem;">
-      <p>Loading questionnaire...</p>
+    <div class="questionnaire-loading">
+      <p>Loading questionnaire</p>
     </div>
   </div>
 
-  <div class="questionnaire-footer" style="margin-top: 2rem; text-align: center; padding-top: 2rem; border-top: 1px solid #e2e2e2;">
-    <p style="color: #666; font-size: 0.9rem;">
+  <div class="questionnaire-footer">
+    <p>
       Your information is secure and will only be used for medical consultation purposes.
     </p>
   </div>
@@ -38,8 +38,10 @@
       // The questionnaire-integration.js will handle the completion
       console.log('Questionnaire initialized for product:', productId, 'Quiz:', quizId);
     } else {
-      document.getElementById('questionnaire-content').innerHTML = 
-        '<div style="text-align: center; padding: 2rem;"><p style="color: red;">Invalid questionnaire link. Please return to the product page.</p></div>';
+      const contentDiv = document.getElementById('questionnaire-content');
+      if (contentDiv) {
+        contentDiv.innerHTML = '<div class="message error">Invalid questionnaire link. Please return to the product page.</div>';
+      }
     }
   });
 </script>

@@ -228,9 +228,9 @@ See [`04_SHOPIFY_MANUAL_SETTINGS_GUIDE.md`](../04_SHOPIFY_MANUAL_SETTINGS_GUIDE.
 ### 5. Webhook Configuration
 
 Configure webhooks in Shopify Admin:
-- RevenueHunt webhook: `POST /api/webhooks/revenuehunt`
-- Cowlendar webhook: `POST /api/webhooks/cowlendar`
-- Order paid webhook: `POST /api/webhooks/shopify/order-paid`
+- RevenueHunt webhook: `POST /webhooks/revenue-hunt` (handled by frontend JavaScript)
+- Shopify Order Created: `POST /webhooks/shopify/orders/created` (for Cowlendar bookings)
+- Shopify Order Paid: `POST /webhooks/shopify/orders/paid` (for order processing)
 
 See [`05_REVENUEHUNT_WEBHOOK_SETUP.md`](../05_REVENUEHUNT_WEBHOOK_SETUP.md) for details.
 
@@ -244,7 +244,8 @@ See [`05_REVENUEHUNT_WEBHOOK_SETUP.md`](../05_REVENUEHUNT_WEBHOOK_SETUP.md) for 
 - Embeds RevenueHunt quiz based on product category
 - Handles quiz completion
 - Shows purchase type selector (Subscription/One-time)
-- Reveals add-to-cart button after quiz completion
+- If no red flags: Automatically adds to cart and redirects to checkout
+- If red flags: Shows consultation scheduling → redirects to `/products/appointment-booking`
 
 **URL Parameters:**
 - `product_id` - Shopify product ID
@@ -309,14 +310,15 @@ shopify theme dev
 Before publishing:
 - [ ] Test questionnaire flow with products
 - [ ] Verify RevenueHunt quiz embedding
-- [ ] Test add-to-cart functionality
-- [ ] Verify purchase type selection
+- [ ] Test no red flags flow: Automatically adds to cart and redirects to checkout
+- [ ] Test red flags flow: Shows consultation scheduling → redirects to `/products/appointment-booking`
+- [ ] Verify purchase type selection (subscription vs one-time)
 - [ ] Test patient chart page (requires logged-in customer)
 - [ ] Test appointments page
-- [ ] Verify Cowlendar booking integration
+- [ ] Verify Cowlendar booking integration (appointment product shows "Book Now" button)
 - [ ] Test on mobile devices
 - [ ] Check all theme variants
-- [ ] Verify webhook endpoints
+- [ ] Verify webhook endpoints (`/webhooks/revenue-hunt`, `/webhooks/shopify/orders/created`)
 
 ## 🐛 Troubleshooting
 
@@ -331,16 +333,17 @@ Before publishing:
 4. Verify RevenueHunt quiz ID is correct
 5. Check API endpoint is accessible
 
-### Add-to-Cart Button Not Appearing
+### Not Redirecting to Checkout After Questionnaire
 
-**Symptoms:** Button doesn't show after quiz completion
+**Symptoms:** After completing questionnaire with no red flags, customer is not redirected to checkout
 
 **Solutions:**
-1. Check quiz completion webhook is configured
-2. Verify backend API is receiving webhook data
-3. Check browser console for errors
-4. Verify customer is logged in (if required)
-5. Check product variant ID is correct
+1. Check backend API response includes `action: "proceed_to_checkout"`
+2. Verify backend API is receiving webhook data at `/webhooks/revenue-hunt`
+3. Check browser console for JavaScript errors
+4. Verify product variant ID is available (needed to add to cart)
+5. Check that `/cart/add.js` endpoint is accessible
+6. Verify customer is not blocked by browser popup blockers
 
 ### Patient Chart Not Loading
 

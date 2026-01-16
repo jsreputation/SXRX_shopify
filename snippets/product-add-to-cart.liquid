@@ -31,15 +31,15 @@
 		{%- render 'quiz-id-mapping', product: product -%}
 		
 		{%- comment -%} Subscription vs One-Time Purchase Selector {%- endcomment -%}
-		<div class="purchase-type-selector" style="margin-bottom: 1rem;">
-			<label class="purchase-type-label" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Purchase Type:</label>
-			<div class="purchase-type-options" style="display: flex; gap: 1rem;">
-				<label style="display: flex; align-items: center; cursor: pointer;">
-					<input type="radio" name="purchase-type" value="subscription" checked style="margin-right: 0.5rem;">
+		<div class="purchase-type-selector">
+			<label class="purchase-type-label">Purchase Type:</label>
+			<div class="purchase-type-options">
+				<label>
+					<input type="radio" name="purchase-type" value="subscription" checked>
 					<span>Subscription (Monthly)</span>
 				</label>
-				<label style="display: flex; align-items: center; cursor: pointer;">
-					<input type="radio" name="purchase-type" value="one-time" style="margin-right: 0.5rem;">
+				<label>
+					<input type="radio" name="purchase-type" value="one-time">
 					<span>One-Time Purchase</span>
 				</label>
 			</div>
