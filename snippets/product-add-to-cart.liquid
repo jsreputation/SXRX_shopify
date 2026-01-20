@@ -28,7 +28,8 @@
 
 	{%- if requires_questionnaire -%}
 		{%- comment -%} Get quiz ID from metafield or tags {%- endcomment -%}
-		{%- render 'quiz-id-mapping', product: product -%}
+		{%- capture computed_quiz_id -%}{%- render 'quiz-id-mapping', product: product -%}{%- endcapture -%}
+		{%- assign quizId = computed_quiz_id | strip -%}
 		
 		{%- comment -%} Subscription vs One-Time Purchase Selector {%- endcomment -%}
 		<div class="purchase-type-selector">
