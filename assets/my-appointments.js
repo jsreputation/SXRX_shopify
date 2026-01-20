@@ -1530,7 +1530,6 @@
 
   window.filterAppointments = filterAppointments;
   window.setAppointmentsSort = setAppointmentsSort;
-  window.setAppointmentsView = setAppointmentsView;
 
   window.printAppointments = function() {
     window.print();
