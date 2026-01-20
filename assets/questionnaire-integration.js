@@ -65,6 +65,81 @@
     return window.storefrontToken || '';
   }
 
+  function getPageHandleFromPathname(pathname) {
+    try {
+      const p = String(pathname || window.location.pathname || '');
+      const m = p.match(/^\/pages\/([^/?#]+)/i);
+      return m && m[1] ? decodeURIComponent(m[1]) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Landing pages ("/pages/<handle>") that are actually product marketing pages.
+  // If someone clicks "Buy now" there, redirect them to the matching product page
+  // where the questionnaire purchase flow is implemented.
+  const QUESTIONNAIRE_PRODUCT_HANDLES = new Set([
+    'mirtazapine',
+    'wellbutrin',
+    'lexapro-zoloft',
+    'xanax',
+    'adderall',
+    'ketamine-therapy',
+    'low-dose-naltrexone-ldn',
+    'defense-doxyprep-doxycycline',
+    'safeguard-prep-descovy',
+    'sexual-performance-enhancement-power-performance-pack-nasal-spray',
+    'sexual-performance-enhancement-power-performance-pack-oral',
+    'premature-ejaculation-solutions-peak-performance',
+    'sexual-desire-desire-boost',
+    'testosterone-replacement-therapy-trt',
+    'weight-loss-weightwise',
+    'revitalize-your-hair-root-revival',
+    'ease-menopause-estrogen-and-bhrt',
+    'hormone-harmony-topical-sublingual-testosterone',
+    'birth-control-desogestrel-copy',
+    'birth-control-desogestrel',
+    'menstrual-health-menoease',
+    'renewal-glycolic-exfoliating-lotion',
+    'shield-protect-antioxidant-sunscreen',
+    'ultimate-radiance-complex',
+    'skincare-ultimate-radiance-complex'
+  ]);
+
+  function initLandingPageBuyNowRedirect() {
+    const pageHandle = getPageHandleFromPathname(window.location.pathname);
+    if (!pageHandle) return;
+    if (!QUESTIONNAIRE_PRODUCT_HANDLES.has(pageHandle)) return;
+
+    const clickMatches = (el) => {
+      if (!el) return false;
+      const text = (el.textContent || '').trim().toLowerCase();
+      // Covers the common variants we've seen
+      if (text === 'buy now') return true;
+      if (text === 'buy it now') return true;
+      if (text.includes('buy') && text.includes('now')) return true;
+      if (text.includes('checkout')) return true;
+      return false;
+    };
+
+    const redirect = (evt) => {
+      try {
+        evt.preventDefault();
+      } catch (e) {}
+      window.location.href = `/products/${encodeURIComponent(pageHandle)}`;
+    };
+
+    // Only attach within the page content to avoid touching global nav buttons.
+    const scope = document.querySelector('.page-content-width, .post-content, .rte') || document;
+    const candidates = Array.from(scope.querySelectorAll('a, button'));
+    candidates.forEach((el) => {
+      if (!clickMatches(el)) return;
+      if (el.hasAttribute('data-sxrx-buy-now-handled')) return;
+      el.setAttribute('data-sxrx-buy-now-handled', 'true');
+      el.addEventListener('click', redirect);
+    });
+  }
+
   // Redirect to questionnaire page
   function redirectToQuestionnaire(productId, quizId, customerId, purchaseType) {
     const params = new URLSearchParams({
@@ -400,6 +475,10 @@
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
+    // If user is on a marketing page under /pages/<handle>, redirect Buy Now to /products/<handle>
+    // so the questionnaire flow can run from the real product form.
+    initLandingPageBuyNowRedirect();
+
     // Check if we're on a product page
     const purchaseButton = document.getElementById('purchase-button');
     
