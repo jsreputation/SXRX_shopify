@@ -21,7 +21,9 @@
 			assign tags_str = product.tags | join: ',' | downcase
 
 			# Prefer metafield if present (CSV imports set this)
-			if product.metafields.sxrx.requires_questionnaire == true or product.metafields.sxrx.requires_questionnaire == 'true' or product.metafields.sxrx.requires_questionnaire.value == true
+			assign rq = product.metafields.sxrx.requires_questionnaire
+			assign rq_str = rq | downcase
+			if rq == true or rq_str == 'true' or rq_str == '1' or rq_str == 'yes' or rq_str == 'y' or rq.value == true
 				assign requires_questionnaire = true
 			elsif tags_str contains 'requires-questionnaire'
 				# Use substring match so it still works if tags were imported as a single combined tag string
@@ -36,6 +38,16 @@
 		{%- comment -%} Get quiz ID from metafield or tags {%- endcomment -%}
 		{%- capture computed_quiz_id -%}{%- render 'quiz-id-mapping', product: product -%}{%- endcapture -%}
 		{%- assign quizId = computed_quiz_id | strip -%}
+
+		{%- comment -%} Expose questionnaire gating metadata for JS (product pages). {%- endcomment -%}
+		<div
+			id="sxrx-questionnaire-meta"
+			data-requires-questionnaire="true"
+			data-product-id="{{ product.id }}"
+			data-quiz-id="{{ quizId }}"
+			{% if customer %}data-customer-id="{{ customer.id }}"{% endif %}
+			style="display:none"
+		></div>
 		
 		{%- comment -%} Subscription vs One-Time Purchase Selector {%- endcomment -%}
 		<div class="purchase-type-selector">

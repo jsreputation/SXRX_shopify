@@ -177,6 +177,77 @@
     redirectToQuestionnaire(productId, quizId, customerId, purchaseType);
   }
 
+  function getQuestionnaireMetaFromDom() {
+    const meta = document.getElementById('sxrx-questionnaire-meta');
+    if (!meta) return null;
+    const productId = meta.getAttribute('data-product-id');
+    const quizId = meta.getAttribute('data-quiz-id');
+    const requires = (meta.getAttribute('data-requires-questionnaire') || '').toLowerCase() === 'true';
+    const customerId = meta.getAttribute('data-customer-id');
+    if (!productId || !quizId || !requires) return null;
+    return { productId, quizId, customerId: customerId || null };
+  }
+
+  function initQuestionnaireGateForBuyButtons() {
+    const meta = getQuestionnaireMetaFromDom();
+    if (!meta) return;
+
+    const { productId, quizId, customerId } = meta;
+
+    const shouldGate = () => {
+      try {
+        return sessionStorage.getItem(`questionnaire_completed_${productId}`) !== 'true';
+      } catch (e) {
+        return true;
+      }
+    };
+
+    const getPurchaseType = () => {
+      const purchaseTypeRadio = document.querySelector('input[name="purchase-type"]:checked');
+      return purchaseTypeRadio ? purchaseTypeRadio.value : 'subscription';
+    };
+
+    const goToQuiz = () => {
+      const purchaseType = getPurchaseType();
+      try {
+        sessionStorage.setItem(`purchaseType_${productId}`, purchaseType);
+        sessionStorage.setItem(`redirectProduct_${productId}`, window.location.href);
+      } catch (e) {}
+      redirectToQuestionnaire(productId, quizId, customerId, purchaseType);
+    };
+
+    // Intercept any attempt to add-to-cart or buy-now (dynamic checkout) before quiz completion.
+    const interceptSubmit = (evt) => {
+      if (!shouldGate()) return;
+      try {
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
+      } catch (e) {}
+      goToQuiz();
+    };
+
+    // Capture phase so we beat the theme's product.js ajax handler.
+    document.querySelectorAll('form[action*="/cart/add"]').forEach((form) => {
+      if (form.hasAttribute('data-sxrx-quiz-gate')) return;
+      form.setAttribute('data-sxrx-quiz-gate', 'true');
+      form.addEventListener('submit', interceptSubmit, true);
+    });
+
+    // Also intercept direct clicks on Shopify payment buttons (some themes submit differently).
+    document.querySelectorAll('.shopify-payment-button__button, .shopify-payment-button button').forEach((btn) => {
+      if (btn.hasAttribute('data-sxrx-quiz-gate')) return;
+      btn.setAttribute('data-sxrx-quiz-gate', 'true');
+      btn.addEventListener('click', (evt) => {
+        if (!shouldGate()) return;
+        try {
+          evt.preventDefault();
+          evt.stopImmediatePropagation();
+        } catch (e) {}
+        goToQuiz();
+      }, true);
+    });
+  }
+
   // Initialize RevenueHunt quiz on questionnaire page
   function initRevenueHuntQuiz(quizId) {
     // Listen for RevenueHunt completion event
@@ -481,6 +552,9 @@
 
     // Check if we're on a product page
     const purchaseButton = document.getElementById('purchase-button');
+
+    // For questionnaire-gated products, also gate Add to cart / Buy it now until quiz is completed.
+    initQuestionnaireGateForBuyButtons();
     
     if (purchaseButton) {
       // Set up purchase button click handler
