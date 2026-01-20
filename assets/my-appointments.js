@@ -1067,34 +1067,31 @@
 
     upcoming = sortAppointmentsList(upcoming);
     past = sortAppointmentsList(past);
+    const allSorted = sortAppointmentsList(Array.isArray(appointments) ? appointments : []);
 
     const sortValue = `${appointmentsUiState.sortKey}:${appointmentsUiState.sortDir}`;
 
-    const renderSection = (sectionKey, title, items, isUpcomingSection) => {
-      if (!items || items.length === 0) return '';
+    const filterType = appointmentsUiState.sectionFilter || 'all';
+    const tableItems =
+      filterType === 'upcoming' ? upcoming :
+      filterType === 'past' ? past :
+      allSorted;
 
-      return `
-        <div class="appointments-section" data-section="${sectionKey}">
-          <h2 style="color: ${sectionKey === 'upcoming' ? '#3f72e5' : '#666'};">${title} (${items.length})</h2>
-          <div class="sxrx-table-wrap">
-            <table class="sxrx-table">
-              <thead>
-                <tr>
-                  <th class="sortable" data-sort-key="name">Appointment</th>
-                  <th class="sortable" data-sort-key="start">Date</th>
-                  <th>Time</th>
-                  <th class="sortable" data-sort-key="status">Status</th>
-                  <th>Telemedicine</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${items.map(apt => renderAppointmentRow(apt, !!isUpcomingSection)).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
+    const tableTitle =
+      filterType === 'upcoming' ? 'Upcoming Appointments' :
+      filterType === 'past' ? 'Past Appointments' :
+      'All Appointments';
+
+    const isUpcomingRow = (apt) => {
+      try {
+        const status = (apt.status || apt.appointmentStatus || apt.AppointmentStatus || '').toLowerCase();
+        if (status.includes('cancelled') || status.includes('completed')) return false;
+        const startMs = getAppointmentStartMeta(apt).date?.getTime();
+        if (!startMs) return true; // no datetime -> treat as upcoming
+        return startMs > Date.now();
+      } catch (e) {
+        return false;
+      }
     };
 
     const html = `
@@ -1167,9 +1164,28 @@
           </div>
         </div>
 
-        ${renderSection('upcoming', 'Upcoming Appointments', upcoming, true)}
-
-        ${renderSection('past', 'Past Appointments', past, false)}
+        ${tableItems.length > 0 ? `
+          <div class="appointments-section" data-section="${filterType}">
+            <h2 style="color: ${filterType === 'upcoming' ? '#3f72e5' : '#666'};">${tableTitle} (${tableItems.length})</h2>
+            <div class="sxrx-table-wrap">
+              <table class="sxrx-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-key="name">Appointment</th>
+                    <th class="sortable" data-sort-key="start">Date</th>
+                    <th>Time</th>
+                    <th class="sortable" data-sort-key="status">Status</th>
+                    <th>Telemedicine</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${tableItems.map(apt => renderAppointmentRow(apt, isUpcomingRow(apt))).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
 
         ${appointments.length === 0 ? `
           <div class="no-appointments">
@@ -1226,8 +1242,8 @@
       });
     });
 
-    // Apply current filter/search after rerender
-    try { filterAppointments(); } catch (e) {}
+    // Apply current search after rerender (no re-render loop)
+    try { applyAppointmentsSearchFilter(); } catch (e) {}
 
     // Add event listeners for schedule buttons
     const scheduleBtn = document.getElementById('schedule-new-appointment-btn');
@@ -1240,12 +1256,22 @@
       scheduleFirstBtn.addEventListener('click', handleScheduleClick);
     }
     
-    // Initialize countdown timers for upcoming appointments
+    // Initialize countdown timers for upcoming appointments (only those with real datetimes)
     upcoming.forEach(apt => {
       const startTime = getAppointmentStartMeta(apt).date;
       if (startTime && startTime.getTime() > Date.now()) {
         initCountdown(apt.id || apt.ID, startTime);
       }
+    });
+  }
+
+  function applyAppointmentsSearchFilter() {
+    const searchTerm = (document.getElementById('appointments-search')?.value || '').toLowerCase();
+    const rows = document.querySelectorAll('[data-searchable]');
+    rows.forEach(row => {
+      const searchable = (row.getAttribute('data-searchable') || '').toLowerCase();
+      const matchesSearch = !searchTerm || searchable.includes(searchTerm);
+      row.style.display = matchesSearch ? '' : 'none';
     });
   }
 
@@ -1392,24 +1418,18 @@
 
     // Persist UI state so rerenders keep user choices
     appointmentsUiState.searchTerm = document.getElementById('appointments-search')?.value || '';
+
+    const filterChanged = appointmentsUiState.sectionFilter !== filterType;
     appointmentsUiState.sectionFilter = filterType;
-    
-    const sections = document.querySelectorAll('.appointments-section[data-section]');
-    sections.forEach(section => {
-      const sectionType = section.getAttribute('data-section');
-      if (filterType !== 'all' && sectionType !== filterType) {
-        section.classList.add('hidden');
-        return;
-      }
-      section.classList.remove('hidden');
-      
-      const cards = section.querySelectorAll('[data-searchable]');
-      cards.forEach(card => {
-        const searchable = card.getAttribute('data-searchable') || '';
-        const matchesSearch = !searchTerm || searchable.includes(searchTerm);
-        card.style.display = matchesSearch ? '' : 'none';
-      });
-    });
+
+    // If the section changed, re-render to show the correct single table title/list.
+    if (filterChanged && appointmentsData) {
+      renderAppointments(appointmentsData, lastPatientInfo);
+      return;
+    }
+
+    // Otherwise, just filter the current table rows by search term.
+    applyAppointmentsSearchFilter(searchTerm);
   }
 
   window.showCancelModal = function(appointmentId) {
