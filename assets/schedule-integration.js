@@ -4,12 +4,37 @@
 (function() {
   'use strict';
 
+  // Bump this string to verify the latest file is live in Shopify.
+  // You can check the browser console for this line.
+  const SCHEDULE_INTEGRATION_VERSION = '2026-01-19-1';
+  try {
+    console.log(`[SXRX] schedule-integration loaded (${SCHEDULE_INTEGRATION_VERSION})`);
+  } catch (e) {}
+
   // Initialize Cowlendar integration
   function initCowlendarIntegration() {
-    // Find all schedule buttons
-    const scheduleButtons = document.querySelectorAll('a[href*="schedule"], a[href*="appointment"], button:contains("Schedule"), a:contains("Schedule")');
-    
-    // Also check for buttons with specific text
+    // NOTE:
+    // Do NOT use jQuery-only selectors like :contains() here — they break querySelectorAll().
+    // We detect schedule CTAs by href patterns + text content.
+
+    // 1) Explicit href patterns we want to intercept (including legacy external link)
+    let hrefTargets = [];
+    try {
+      hrefTargets = Array.from(document.querySelectorAll(
+        'a[href*="app.sxrx.us"], a[href*="/apps/cowlendar"], a[href*="cowlendar"], a[href*="appointment-booking"]'
+      ));
+    } catch (e) {
+      hrefTargets = [];
+    }
+
+    hrefTargets.forEach((element) => {
+      if (!element.hasAttribute('data-cowlendar-handled')) {
+        element.setAttribute('data-cowlendar-handled', 'true');
+        element.addEventListener('click', handleScheduleClick);
+      }
+    });
+
+    // 2) Also check for buttons/links with schedule text
     const allLinks = document.querySelectorAll('a, button');
     allLinks.forEach(element => {
       const text = element.textContent.toLowerCase();
@@ -45,6 +70,10 @@
 
   // Open Cowlendar booking
   function openCowlendarBooking(context = {}) {
+    // Expose for other scripts (e.g. my-appointments.js)
+    // eslint-disable-next-line no-undef
+    window.openCowlendarBooking = openCowlendarBooking;
+
     // Check if Cowlendar app is embedded
     const cowlendarEmbed = document.querySelector('[data-cowlendar-app]');
     
@@ -61,7 +90,7 @@
       // Cowlendar typically provides a booking page URL or embed code
       // Redirect to Cowlendar booking page or show embedded widget
       
-      // Option 1: Redirect to Cowlendar booking page (if configured)
+      // Option 1: Redirect to Appointment Booking product page (preferred)
       const cowlendarBookingUrl = getCowlendarBookingUrl(context);
       if (cowlendarBookingUrl) {
         window.location.href = cowlendarBookingUrl;
@@ -75,17 +104,13 @@
 
   // Get Cowlendar booking URL
   function getCowlendarBookingUrl(context) {
-    // This should be configured in Shopify settings or environment
-    // For now, check for common Cowlendar patterns
-    const baseUrl = window.Shopify?.shop || '';
-    
-    // Cowlendar typically uses: /apps/cowlendar/book or similar
-    // You may need to configure this based on your Cowlendar setup
+    // Preferred: route users to the Shopify product page that hosts Cowlendar booking
+    // This avoids sending users to external domains like app.sxrx.us
+    const basePath = '/products/appointment-booking';
     if (context.customerId) {
-      return `/apps/cowlendar/book?customer=${context.customerId}`;
+      return `${basePath}?customer=${encodeURIComponent(String(context.customerId))}`;
     }
-    
-    return '/apps/cowlendar/book';
+    return basePath;
   }
 
   // Show Cowlendar widget (if embedded)

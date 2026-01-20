@@ -11,7 +11,7 @@
     "chart-content": {
       "type": "custom-content",
       "settings": {
-        "heading": "My Chart",
+        "heading": "",
         "custom_html": "<div id='my-chart-container' class='my-chart-container'></div>"
       }
     }

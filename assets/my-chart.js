@@ -4,9 +4,75 @@
 (function() {
   'use strict';
 
+  const MY_CHART_VERSION = '2026-01-20-1';
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
   let currentCustomerId = null;
   let chartData = null;
+
+  console.log(`[SXRX] my-chart loaded (${MY_CHART_VERSION})`, { BACKEND_API });
+
+  function isNgrokBackend() {
+    return /ngrok/i.test(BACKEND_API);
+  }
+
+  function withNgrokSkip(url) {
+    try {
+      if (!isNgrokBackend()) return url;
+      const u = new URL(url);
+      if (!u.searchParams.has('ngrok-skip-browser-warning')) {
+        u.searchParams.set('ngrok-skip-browser-warning', '1');
+      }
+      return u.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+
+  function addNgrokBypassHeader(headers) {
+    if (!isNgrokBackend()) return;
+    // This header is handled by ngrok itself and prevents the HTML warning interstitial.
+    if (headers && typeof headers.set === 'function') {
+      headers.set('ngrok-skip-browser-warning', '1');
+      return;
+    }
+    headers['ngrok-skip-browser-warning'] = '1';
+  }
+
+  async function readJsonOrThrow(res) {
+    const ct = String(res.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('application/json') || ct.includes('+json')) {
+      return await res.json();
+    }
+    const text = await res.text().catch(() => '');
+    const preview = text ? text.slice(0, 300) : '(empty body)';
+    throw new Error(`Expected JSON but received ${ct || 'unknown content-type'} (status ${res.status}). Preview: ${preview}`);
+  }
+
+  async function readErrorPayload(res) {
+    const ct = String(res.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('application/json') || ct.includes('+json')) {
+      return await res.json().catch(() => ({}));
+    }
+    const text = await res.text().catch(() => '');
+    return { nonJson: true, preview: text.slice(0, 300) };
+  }
+
+  function resolveCustomerId() {
+    const candidates = [
+      window.Shopify?.customer?.id,
+      window.SXRX?.customerId,
+      window.ShopifyAnalytics?.meta?.page?.customerId,
+      window.__st?.cid,
+      sessionStorage.getItem('customerId'),
+      new URLSearchParams(window.location.search).get('customer')
+    ].filter(Boolean);
+
+    const id = candidates.length ? String(candidates[0]) : null;
+    if (id) {
+      try { sessionStorage.setItem('customerId', id); } catch (e) {}
+    }
+    return id;
+  }
   
   // Add professional styles
   function addStyles() {
@@ -488,19 +554,9 @@
       showLoading();
       
       // Get customer ID from Shopify
-      const customerId = window.Shopify?.customer?.id;
+      const customerId = resolveCustomerId();
       if (!customerId) {
-        // Try to get from URL or sessionStorage
-        const urlParams = new URLSearchParams(window.location.search);
-        const storedCustomerId = urlParams.get('customer') || sessionStorage.getItem('customerId');
-        
-        if (!storedCustomerId) {
-          showError('Please log in to view your chart.');
-          return;
-        }
-        
-        currentCustomerId = storedCustomerId;
-        await loadChartForCustomer(storedCustomerId);
+        showError('We could not detect your customer session. Please refresh the page. If the issue persists, log out and log back in.');
         return;
       }
 
@@ -527,9 +583,7 @@
   async function loadChartForCustomer(customerId, showRetry = false) {
     try {
       // Build headers - try multiple auth methods
-      const headers = {
-        'Content-Type': 'application/json'
-      };
+      const headers = new Headers();
       
       // Try to get Shopify customer access token from various sources
       const storefrontToken = getStorefrontToken();
@@ -538,23 +592,26 @@
                                   localStorage.getItem('shopify_customer_access_token');
       
       if (storefrontToken) {
-        headers['Authorization'] = `Bearer ${storefrontToken}`;
+        headers.set('Authorization', `Bearer ${storefrontToken}`);
       } else if (shopifyCustomerToken) {
-        headers['shopify_access_token'] = shopifyCustomerToken;
+        headers.set('shopify_access_token', shopifyCustomerToken);
       }
+
+      addNgrokBypassHeader(headers);
       
       console.log(`🔍 [MY-CHART] Loading chart for customer ${customerId}`, {
         hasStorefrontToken: !!storefrontToken,
         hasShopifyToken: !!shopifyCustomerToken,
-        headers: Object.keys(headers)
+        isNgrokBackend: isNgrokBackend(),
+        headers: Array.from(headers.keys ? headers.keys() : [])
       });
       
-      const response = await fetch(`${BACKEND_API}/api/shopify/customers/${customerId}/chart`, {
-        headers: headers
+      const response = await fetch(withNgrokSkip(`${BACKEND_API}/api/shopify/customers/${customerId}/chart`), {
+        headers
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await readErrorPayload(response);
         console.error(`❌ [MY-CHART] API error:`, response.status, errorData);
         
         if (response.status === 401 || response.status === 403) {
@@ -568,7 +625,7 @@
         throw new Error(errorData.message || `Failed to load chart data (${response.status})`);
       }
 
-      const data = await response.json();
+      const data = await readJsonOrThrow(response);
       chartData = data;
       console.log(`✅ [MY-CHART] Chart data loaded:`, {
         hasPatient: !!data.patient,
@@ -866,6 +923,7 @@
     const container = document.getElementById('my-chart-container');
     if (container) {
       addStyles();
+      const isLoggedIn = !!(window.SXRX?.isLoggedIn || document.body.classList.contains('customer-logged-in'));
       container.innerHTML = `
         <div class="error-message">
           <h2>⚠️ Unable to Load Chart</h2>
@@ -873,7 +931,7 @@
           ${showRetry && currentCustomerId ? `
             <button class="btn btn-primary" onclick="window.refreshChart()">🔄 Retry</button>
           ` : ''}
-          <a href="/account/login" class="btn btn-primary">Please log in to view your chart</a>
+          ${isLoggedIn ? `<a href="/pages/my-chart" class="btn btn-primary">Refresh page</a>` : `<a href="/account/login" class="btn btn-primary" data-no-instant>Log in</a>`}
         </div>
       `;
     }

@@ -101,6 +101,18 @@
 		<div class="click-capture"></div>
 		<div class="click-capture--product"></div>
 	</div>
+	{%- comment -%} Expose Shopify customer id for JS (account pages) {%- endcomment -%}
+	<script>
+		// SXRX customer context (safe: id only)
+		window.SXRX = window.SXRX || {};
+		window.SXRX.isLoggedIn = {{ customer != blank | json }};
+		window.SXRX.customerId = {{ customer.id | json }};
+		try {
+			if (window.SXRX.customerId) {
+				sessionStorage.setItem('customerId', String(window.SXRX.customerId));
+			}
+		} catch (e) {}
+	</script>
 	{%- comment -%} Load scripts for My Chart and My Appointments pages {%- endcomment -%}
 	{%- if template.name == 'page' and page.handle == 'my-chart' -%}
 		<script src="{{ 'my-chart.js' | asset_url }}" defer></script>

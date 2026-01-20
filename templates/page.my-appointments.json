@@ -11,7 +11,7 @@
     "appointments-content": {
       "type": "custom-content",
       "settings": {
-        "heading": "My Appointments",
+        "heading": "",
         "custom_html": "<div id='my-appointments-container' class='my-appointments-container'></div>"
       }
     }

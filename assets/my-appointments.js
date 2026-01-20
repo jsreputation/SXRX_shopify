@@ -4,10 +4,76 @@
 (function() {
   'use strict';
 
+  const MY_APPOINTMENTS_VERSION = '2026-01-20-1';
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
   let currentCustomerId = null;
   let appointmentsData = null;
   let countdownIntervals = [];
+
+  console.log(`[SXRX] my-appointments loaded (${MY_APPOINTMENTS_VERSION})`, { BACKEND_API });
+
+  function isNgrokBackend() {
+    return /ngrok/i.test(BACKEND_API);
+  }
+
+  function withNgrokSkip(url) {
+    try {
+      if (!isNgrokBackend()) return url;
+      const u = new URL(url);
+      if (!u.searchParams.has('ngrok-skip-browser-warning')) {
+        u.searchParams.set('ngrok-skip-browser-warning', '1');
+      }
+      return u.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+
+  function addNgrokBypassHeader(headers) {
+    if (!isNgrokBackend()) return;
+    // This header is handled by ngrok itself and prevents the HTML warning interstitial.
+    if (headers && typeof headers.set === 'function') {
+      headers.set('ngrok-skip-browser-warning', '1');
+      return;
+    }
+    headers['ngrok-skip-browser-warning'] = '1';
+  }
+
+  async function readJsonOrThrow(res) {
+    const ct = String(res.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('application/json') || ct.includes('+json')) {
+      return await res.json();
+    }
+    const text = await res.text().catch(() => '');
+    const preview = text ? text.slice(0, 300) : '(empty body)';
+    throw new Error(`Expected JSON but received ${ct || 'unknown content-type'} (status ${res.status}). Preview: ${preview}`);
+  }
+
+  async function readErrorPayload(res) {
+    const ct = String(res.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('application/json') || ct.includes('+json')) {
+      return await res.json().catch(() => ({}));
+    }
+    const text = await res.text().catch(() => '');
+    return { nonJson: true, preview: text.slice(0, 300) };
+  }
+
+  function resolveCustomerId() {
+    const candidates = [
+      window.Shopify?.customer?.id,
+      window.SXRX?.customerId,
+      window.ShopifyAnalytics?.meta?.page?.customerId,
+      window.__st?.cid,
+      sessionStorage.getItem('customerId'),
+      new URLSearchParams(window.location.search).get('customer')
+    ].filter(Boolean);
+
+    const id = candidates.length ? String(candidates[0]) : null;
+    if (id) {
+      try { sessionStorage.setItem('customerId', id); } catch (e) {}
+    }
+    return id;
+  }
   
   // Add professional styles
   function addStyles() {
@@ -613,19 +679,9 @@
       showLoading();
       
       // Get customer ID from Shopify
-      const customerId = window.Shopify?.customer?.id;
+      const customerId = resolveCustomerId();
       if (!customerId) {
-        // Try to get from URL or sessionStorage
-        const urlParams = new URLSearchParams(window.location.search);
-        const storedCustomerId = urlParams.get('customer') || sessionStorage.getItem('customerId');
-        
-        if (!storedCustomerId) {
-          showError('Please log in to view your appointments.');
-          return;
-        }
-        
-        currentCustomerId = storedCustomerId;
-        await loadAppointmentsForCustomer(storedCustomerId);
+        showError('We could not detect your customer session. Please refresh the page. If the issue persists, log out and log back in.');
         return;
       }
 
@@ -656,9 +712,7 @@
       countdownIntervals = [];
       
       // Build headers - try multiple auth methods
-      const headers = {
-        'Content-Type': 'application/json'
-      };
+      const headers = new Headers();
       
       // Try to get Shopify customer access token from various sources
       const storefrontToken = getStorefrontToken();
@@ -667,23 +721,27 @@
                                   localStorage.getItem('shopify_customer_access_token');
       
       if (storefrontToken) {
-        headers['Authorization'] = `Bearer ${storefrontToken}`;
+        headers.set('Authorization', `Bearer ${storefrontToken}`);
       } else if (shopifyCustomerToken) {
-        headers['shopify_access_token'] = shopifyCustomerToken;
+        headers.set('shopify_access_token', shopifyCustomerToken);
       }
+
+      addNgrokBypassHeader(headers);
       
       console.log(`🔍 [MY-APPOINTMENTS] Loading appointments for customer ${customerId}`, {
         hasStorefrontToken: !!storefrontToken,
-        hasShopifyToken: !!shopifyCustomerToken
+        hasShopifyToken: !!shopifyCustomerToken,
+        isNgrokBackend: isNgrokBackend(),
+        headerKeys: Array.from(headers.keys ? headers.keys() : [])
       });
       
       // First, get patient chart to get Tebra patient ID
-      const chartResponse = await fetch(`${BACKEND_API}/api/shopify/customers/${customerId}/chart`, {
-        headers: headers
+      const chartResponse = await fetch(withNgrokSkip(`${BACKEND_API}/api/shopify/customers/${customerId}/chart`), {
+        headers
       });
 
       if (!chartResponse.ok) {
-        const errorData = await chartResponse.json().catch(() => ({}));
+        const errorData = await readErrorPayload(chartResponse);
         console.error(`❌ [MY-APPOINTMENTS] Chart API error:`, chartResponse.status, errorData);
         
         if (chartResponse.status === 401 || chartResponse.status === 403) {
@@ -697,18 +755,18 @@
         throw new Error(errorData.message || 'Failed to load patient data');
       }
 
-      const chartData = await chartResponse.json();
+      const chartData = await readJsonOrThrow(chartResponse);
       const appointments = chartData.appointments || [];
 
       // Also try to fetch appointments directly from appointments endpoint if available
       let additionalAppointments = [];
       try {
-        const appointmentsResponse = await fetch(`${BACKEND_API}/api/shopify/customers/${customerId}/appointments`, {
-          headers: headers
+        const appointmentsResponse = await fetch(withNgrokSkip(`${BACKEND_API}/api/shopify/customers/${customerId}/appointments`), {
+          headers
         });
 
         if (appointmentsResponse.ok) {
-          const appointmentsData = await appointmentsResponse.json();
+          const appointmentsData = await readJsonOrThrow(appointmentsResponse);
           additionalAppointments = appointmentsData.appointments || [];
         } else {
           console.warn(`⚠️ [MY-APPOINTMENTS] Appointments endpoint returned ${appointmentsResponse.status}`);
@@ -1166,7 +1224,7 @@
     event.preventDefault();
     
     // Get patient context if available
-    const customerId = window.Shopify?.customer?.id || sessionStorage.getItem('customerId');
+    const customerId = resolveCustomerId();
     
     // Use schedule-integration.js if available, or redirect to Cowlendar
     if (window.openCowlendarBooking) {
@@ -1181,6 +1239,7 @@
     const container = document.getElementById('my-appointments-container');
     if (container) {
       addStyles();
+      const isLoggedIn = !!(window.SXRX?.isLoggedIn || document.body.classList.contains('customer-logged-in'));
       container.innerHTML = `
         <div class="error-message">
           <h2>⚠️ Unable to Load Appointments</h2>
@@ -1188,7 +1247,7 @@
           ${showRetry && currentCustomerId ? `
             <button class="btn btn-primary" onclick="window.refreshAppointments()">🔄 Retry</button>
           ` : ''}
-          <a href="/account/login" class="btn btn-primary">Please log in to view your appointments</a>
+          ${isLoggedIn ? `<a href="/pages/my-appointments" class="btn btn-primary">Refresh page</a>` : `<a href="/account/login" class="btn btn-primary" data-no-instant>Log in</a>`}
         </div>
       `;
     }

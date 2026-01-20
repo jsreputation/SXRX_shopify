@@ -1,12 +1,4 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
+
 {
   "current": {
     "heading_font": "inter_n6",
@@ -41,9 +33,9 @@
     "blocks": {
       "2209279550302034861": {
         "type": "shopify://apps/revenuehunt-recommender-quiz/blocks/link-popup/672f3d48-fd3b-4227-8778-c6e58c4f8a98",
-        "disabled": false,
+        "disabled": true,
         "settings": {
-          "show_list": true
+          "show_list": false
         }
       },
       "16250556887416161327": {

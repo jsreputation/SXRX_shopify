@@ -4,16 +4,46 @@
 (function() {
   'use strict';
 
+  const QUESTIONNAIRE_INTEGRATION_VERSION = '2026-01-20-1';
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
+  console.log(`[SXRX] questionnaire-integration loaded (${QUESTIONNAIRE_INTEGRATION_VERSION})`, { BACKEND_API });
+
+  function isNgrokBackend() {
+    return /ngrok/i.test(BACKEND_API);
+  }
+
+  function withNgrokSkip(url) {
+    try {
+      if (!isNgrokBackend()) return url;
+      const u = new URL(url);
+      if (!u.searchParams.has('ngrok-skip-browser-warning')) {
+        u.searchParams.set('ngrok-skip-browser-warning', '1');
+      }
+      return u.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+
+  function addNgrokBypassHeader(headers) {
+    if (!isNgrokBackend()) return;
+    if (headers && typeof headers.set === 'function') {
+      headers.set('ngrok-skip-browser-warning', '1');
+      return;
+    }
+    headers['ngrok-skip-browser-warning'] = '1';
+  }
 
   // Check if customer has completed questionnaire
   async function checkQuestionnaireStatus(customerId, productId) {
     try {
-      const response = await fetch(`${BACKEND_API}/api/shopify/products/${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${getStorefrontToken()}`,
-          'Content-Type': 'application/json'
-        }
+      const headers = {
+        'Authorization': `Bearer ${getStorefrontToken()}`
+      };
+      addNgrokBypassHeader(headers);
+
+      const response = await fetch(withNgrokSkip(`${BACKEND_API}/api/shopify/products/${productId}`), {
+        headers
       });
       
       if (!response.ok) return { requiresQuestionnaire: false, completed: false };
@@ -96,12 +126,15 @@
       const customerId = urlParams.get('customer') || window.customerId;
       const purchaseType = urlParams.get('purchaseType') || sessionStorage.getItem(`purchaseType_${productId}`) || 'subscription';
       
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      addNgrokBypassHeader(headers);
+
       // Send quiz results to backend
-      const response = await fetch(`${BACKEND_API}/webhooks/revenue-hunt`, {
+      const response = await fetch(withNgrokSkip(`${BACKEND_API}/webhooks/revenue-hunt`), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify({
           ...quizData,
           customerId: customerId,
