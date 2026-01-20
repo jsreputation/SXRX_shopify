@@ -589,10 +589,42 @@
       // Initialize RevenueHunt quiz
       if (quizId && !quizId.includes('_QUIZ_ID')) {
         initRevenueHuntQuiz(quizId);
-        
-        // Trigger RevenueHunt quiz opening
-        // RevenueHunt v2 uses hash-based navigation
-        window.location.hash = `quiz-${quizId}`;
+
+        // Trigger RevenueHunt quiz opening.
+        // RevenueHunt v2 link-popup relies on hash changes; if the user lands on the page
+        // with the target hash already set, we must "bump" it to ensure the popup opens.
+        const targetHash = `quiz-${quizId}`;
+        try {
+          const current = String(window.location.hash || '').replace(/^#/, '');
+          if (current === targetHash) {
+            window.location.hash = 'quiz';
+            setTimeout(() => {
+              window.location.hash = targetHash;
+            }, 50);
+          } else {
+            window.location.hash = targetHash;
+          }
+        } catch (e) {
+          window.location.hash = targetHash;
+        }
+
+        // Fallback UX: if the quiz embed doesn't open, show a helpful message.
+        setTimeout(() => {
+          try {
+            const hasRevenueHuntUi =
+              !!document.querySelector('[data-revenuehunt-quiz], .revenuehunt, iframe[src*="revenuehunt"], iframe[id*="revenuehunt"]');
+            if (!hasRevenueHuntUi) {
+              const contentDiv = document.getElementById('questionnaire-content');
+              if (contentDiv) {
+                contentDiv.innerHTML = `
+                  <div class="message error">
+                    Quiz failed to load. Please refresh the page. If it still doesn’t load, ensure the RevenueHunt “Link Popup Quiz” app embed is enabled in your theme.
+                  </div>
+                `;
+              }
+            }
+          } catch (e) {}
+        }, 2500);
       } else {
         console.error('Invalid or placeholder Quiz ID:', quizId);
         showMessage('Quiz configuration error. Please contact support.', 'error');

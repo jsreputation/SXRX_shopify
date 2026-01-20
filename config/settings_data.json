@@ -33,7 +33,7 @@
     "blocks": {
       "2209279550302034861": {
         "type": "shopify://apps/revenuehunt-recommender-quiz/blocks/link-popup/672f3d48-fd3b-4227-8778-c6e58c4f8a98",
-        "disabled": true,
+        "disabled": false,
         "settings": {
           "show_list": false
         }
