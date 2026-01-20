@@ -8,9 +8,38 @@
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
   let currentCustomerId = null;
   let appointmentsData = null;
+  let lastPatientInfo = null;
   let countdownIntervals = [];
+  const APPT_VIEW_KEY = 'sxrx_appt_view';
+  const APPT_SORT_KEY = 'sxrx_appt_sort_key';
+  const APPT_SORT_DIR = 'sxrx_appt_sort_dir';
+  let appointmentsUiState = {
+    view: 'table', // table | cards
+    sortKey: 'start', // start | name | status | type
+    sortDir: 'desc', // asc | desc
+    searchTerm: '',
+    sectionFilter: 'all'
+  };
 
   console.log(`[SXRX] my-appointments loaded (${MY_APPOINTMENTS_VERSION})`, { BACKEND_API });
+
+  function safeGetStorage(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+
+  function safeSetStorage(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) {}
+  }
+
+  // Restore persisted UI state (best effort)
+  try {
+    const v = safeGetStorage(APPT_VIEW_KEY);
+    const k = safeGetStorage(APPT_SORT_KEY);
+    const d = safeGetStorage(APPT_SORT_DIR);
+    if (v === 'table' || v === 'cards') appointmentsUiState.view = v;
+    if (k) appointmentsUiState.sortKey = k;
+    if (d === 'asc' || d === 'desc') appointmentsUiState.sortDir = d;
+  } catch (e) {}
 
   function isNgrokBackend() {
     return /ngrok/i.test(BACKEND_API);
@@ -56,6 +85,122 @@
     }
     const text = await res.text().catch(() => '');
     return { nonJson: true, preview: text.slice(0, 300) };
+  }
+
+  function parseAppointmentDateTime(value) {
+    if (value == null) return { date: null, hasDate: false, hasTime: false, raw: '' };
+    if (value instanceof Date) {
+      return { date: isNaN(value.getTime()) ? null : value, hasDate: true, hasTime: true, raw: value.toISOString?.() || String(value) };
+    }
+    if (typeof value === 'number') {
+      const d = new Date(value);
+      return { date: isNaN(d.getTime()) ? null : d, hasDate: true, hasTime: true, raw: String(value) };
+    }
+
+    const raw = String(value).trim();
+    if (!raw) return { date: null, hasDate: false, hasTime: false, raw: '' };
+
+    // Time-only values like "12:24:41" (observed from backend) have no date info.
+    const timeOnlyMatch = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (timeOnlyMatch) {
+      return { date: null, hasDate: false, hasTime: true, raw };
+    }
+
+    // Try to normalize "YYYY-MM-DD HH:mm:ss" -> "YYYY-MM-DDTHH:mm:ss"
+    const normalized = raw.includes(' ') && !raw.includes('T') ? raw.replace(' ', 'T') : raw;
+    const d = new Date(normalized);
+    if (isNaN(d.getTime())) {
+      const hasTime = raw.includes(':');
+      const hasDate = /\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}/.test(raw);
+      return { date: null, hasDate, hasTime, raw };
+    }
+    return { date: d, hasDate: true, hasTime: raw.includes(':'), raw };
+  }
+
+  function getAppointmentStartMeta(apt) {
+    return parseAppointmentDateTime(apt.startTime || apt.StartTime || apt.StartDate || apt.start_date || apt.start || null);
+  }
+
+  function getAppointmentEndMeta(apt) {
+    return parseAppointmentDateTime(apt.endTime || apt.EndTime || apt.EndDate || apt.end_date || apt.end || null);
+  }
+
+  function getAppointmentCoreFields(apt) {
+    const appointmentName = apt.appointmentName || apt.AppointmentName || 'Appointment';
+    const appointmentType = apt.appointmentType || apt.AppointmentType || 'Consultation';
+    const status = (apt.status || apt.appointmentStatus || apt.AppointmentStatus || 'Scheduled').toLowerCase();
+    const startMeta = getAppointmentStartMeta(apt);
+    const endMeta = getAppointmentEndMeta(apt);
+    const startTime = startMeta.date;
+    const endTime = endMeta.date;
+    const meetingLink =
+      apt.meetingLink ||
+      apt.MeetingLink ||
+      apt.telemedicineLink ||
+      (apt.notes && apt.notes.match(/https?:\/\/[^\s]+(?:meet\.google\.com|zoom\.us)[^\s]*/i)?.[0]) ||
+      null;
+    const appointmentId = apt.id || apt.ID || apt.AppointmentID || apt.AppointmentId;
+    return { appointmentId, appointmentName, appointmentType, status, startMeta, endMeta, startTime, endTime, meetingLink };
+  }
+
+  function compareNullable(a, b, direction = 'asc') {
+    const dir = direction === 'desc' ? -1 : 1;
+    const aNull = a === null || a === undefined || a === '';
+    const bNull = b === null || b === undefined || b === '';
+    if (aNull && bNull) return 0;
+    if (aNull) return 1; // nulls always last
+    if (bNull) return -1;
+    if (typeof a === 'number' && typeof b === 'number') return (a - b) * dir;
+    return String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }) * dir;
+  }
+
+  function sortAppointmentsList(list) {
+    const key = appointmentsUiState.sortKey || 'start';
+    const dir = appointmentsUiState.sortDir || 'desc';
+    const arr = Array.isArray(list) ? [...list] : [];
+
+    return arr.sort((a, b) => {
+      const fa = getAppointmentCoreFields(a);
+      const fb = getAppointmentCoreFields(b);
+
+      if (key === 'start') {
+        const ta = fa.startTime ? fa.startTime.getTime() : null;
+        const tb = fb.startTime ? fb.startTime.getTime() : null;
+        return compareNullable(ta, tb, dir);
+      }
+
+      if (key === 'name') return compareNullable(fa.appointmentName, fb.appointmentName, dir);
+      if (key === 'status') return compareNullable(fa.status, fb.status, dir);
+      if (key === 'type') return compareNullable(fa.appointmentType, fb.appointmentType, dir);
+
+      return 0;
+    });
+  }
+
+  function setAppointmentsView(view) {
+    if (view !== 'table' && view !== 'cards') return;
+    syncAppointmentsUiFromDom();
+    appointmentsUiState.view = view;
+    safeSetStorage(APPT_VIEW_KEY, view);
+    if (appointmentsData) renderAppointments(appointmentsData, lastPatientInfo);
+  }
+
+  function setAppointmentsSort(sortKey, sortDir) {
+    syncAppointmentsUiFromDom();
+    if (sortKey) appointmentsUiState.sortKey = sortKey;
+    if (sortDir) appointmentsUiState.sortDir = sortDir;
+    safeSetStorage(APPT_SORT_KEY, appointmentsUiState.sortKey);
+    safeSetStorage(APPT_SORT_DIR, appointmentsUiState.sortDir);
+    if (appointmentsData) renderAppointments(appointmentsData, lastPatientInfo);
+  }
+
+  function syncAppointmentsUiFromDom() {
+    try {
+      const search = document.getElementById('appointments-search');
+      const filter = document.getElementById('appointments-filter');
+      if (search) appointmentsUiState.searchTerm = String(search.value || '');
+      if (filter) appointmentsUiState.sectionFilter = String(filter.value || 'all');
+    } catch (e) {}
   }
 
   function resolveCustomerId() {
@@ -201,6 +346,119 @@
         font-size: 0.9375rem;
         background: white;
         cursor: pointer;
+      }
+
+      .controls-right {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .view-toggle {
+        display: inline-flex;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.25rem;
+        gap: 0.25rem;
+      }
+
+      .view-toggle button {
+        border: 0;
+        background: transparent;
+        padding: 0.6rem 0.9rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: #374151;
+      }
+
+      .view-toggle button.active {
+        background: #ffffff;
+        color: #111827;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      }
+
+      .sxrx-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #e8e8e8;
+        border-radius: 12px;
+        background: #fff;
+      }
+
+      .sxrx-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 760px;
+      }
+
+      .sxrx-table thead th {
+        position: sticky;
+        top: 0;
+        background: #f9fafb;
+        z-index: 1;
+        text-align: left;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6b7280;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+      }
+
+      .sxrx-table thead th.sortable {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .sxrx-table tbody td {
+        padding: 0.95rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: top;
+        font-size: 0.95rem;
+        color: #111827;
+      }
+
+      .sxrx-table tbody tr:hover td {
+        background: #fafafa;
+      }
+
+      .table-muted {
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+
+      .table-title {
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+      }
+
+      .table-subtitle {
+        margin: 0.2rem 0 0 0;
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+
+      .table-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .table-link {
+        color: #3f72e5;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .table-link:hover {
+        text-decoration: underline;
       }
       
       .patient-info-section {
@@ -801,9 +1059,13 @@
 
     // Sort by start time (most recent first)
     return merged.sort((a, b) => {
-      const timeA = new Date(a.startTime || a.StartTime || 0).getTime();
-      const timeB = new Date(b.startTime || b.StartTime || 0).getTime();
-      return timeB - timeA; // Descending order
+      const timeA = getAppointmentStartMeta(a).date?.getTime() || 0;
+      const timeB = getAppointmentStartMeta(b).date?.getTime() || 0;
+      if (timeA !== timeB) return timeB - timeA; // Descending order
+
+      const idA = String(a.id || a.ID || a.AppointmentID || a.AppointmentId || '');
+      const idB = String(b.id || b.ID || b.AppointmentID || b.AppointmentId || '');
+      return idB.localeCompare(idA);
     });
   }
 
@@ -811,18 +1073,77 @@
     const container = document.getElementById('my-appointments-container');
     if (!container) return;
 
-    // Separate appointments by status
-    const upcoming = appointments.filter(apt => {
-      const startTime = new Date(apt.startTime || apt.StartTime || 0);
+    lastPatientInfo = patientInfo || null;
+
+    // Separate appointments by status / date availability
+    let upcoming = [];
+    let past = [];
+    let unknownDate = [];
+    const now = Date.now();
+
+    appointments.forEach(apt => {
       const status = (apt.status || apt.appointmentStatus || apt.AppointmentStatus || '').toLowerCase();
-      return startTime > new Date() && !status.includes('cancelled') && !status.includes('completed');
+      const startMeta = getAppointmentStartMeta(apt);
+      const startMs = startMeta.date ? startMeta.date.getTime() : null;
+
+      if (status.includes('cancelled') || status.includes('completed')) {
+        past.push(apt);
+        return;
+      }
+
+      if (!startMs) {
+        // Backend sometimes returns time-only (no date), which can't be categorized safely.
+        unknownDate.push(apt);
+        return;
+      }
+
+      if (startMs > now) upcoming.push(apt);
+      else past.push(apt);
     });
 
-    const past = appointments.filter(apt => {
-      const startTime = new Date(apt.startTime || apt.StartTime || 0);
-      const status = (apt.status || apt.appointmentStatus || apt.AppointmentStatus || '').toLowerCase();
-      return startTime <= new Date() || status.includes('completed') || status.includes('cancelled');
-    });
+    upcoming = sortAppointmentsList(upcoming);
+    past = sortAppointmentsList(past);
+    unknownDate = sortAppointmentsList(unknownDate);
+
+    const sortValue = `${appointmentsUiState.sortKey}:${appointmentsUiState.sortDir}`;
+
+    const renderSection = (sectionKey, title, items, isUpcomingSection) => {
+      if (!items || items.length === 0) return '';
+
+      if (appointmentsUiState.view === 'cards') {
+        return `
+          <div class="appointments-section" data-section="${sectionKey}">
+            <h2 style="color: ${sectionKey === 'upcoming' ? '#3f72e5' : '#666'};">${title} (${items.length})</h2>
+            <div class="appointments-list" id="${sectionKey}-list">
+              ${items.map(apt => renderAppointmentCard(apt, !!isUpcomingSection)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="appointments-section" data-section="${sectionKey}">
+          <h2 style="color: ${sectionKey === 'upcoming' ? '#3f72e5' : '#666'};">${title} (${items.length})</h2>
+          <div class="sxrx-table-wrap">
+            <table class="sxrx-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort-key="name">Appointment</th>
+                  <th class="sortable" data-sort-key="start">Date</th>
+                  <th>Time</th>
+                  <th class="sortable" data-sort-key="status">Status</th>
+                  <th>Telemedicine</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.map(apt => renderAppointmentRow(apt, !!isUpcomingSection)).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    };
 
     const html = `
       <div class="appointments-wrapper">
@@ -875,28 +1196,63 @@
 
         <div class="search-filter-bar">
           <input type="text" class="search-input" id="appointments-search" placeholder="Search appointments..." oninput="window.filterAppointments()">
+          <div class="controls-right">
+            <select class="filter-select" id="appointments-sort" aria-label="Sort appointments">
+              <option value="start:desc">Sort: Date (newest)</option>
+              <option value="start:asc">Sort: Date (oldest)</option>
+              <option value="name:asc">Sort: Name (A–Z)</option>
+              <option value="name:desc">Sort: Name (Z–A)</option>
+              <option value="status:asc">Sort: Status (A–Z)</option>
+              <option value="status:desc">Sort: Status (Z–A)</option>
+              <option value="type:asc">Sort: Type (A–Z)</option>
+              <option value="type:desc">Sort: Type (Z–A)</option>
+            </select>
           <select class="filter-select" id="appointments-filter" onchange="window.filterAppointments()">
             <option value="all">All Appointments</option>
             <option value="upcoming">Upcoming Only</option>
             <option value="past">Past Only</option>
+            <option value="unknown">Date Pending</option>
           </select>
-        </div>
-
-        ${upcoming.length > 0 ? `
-          <div class="appointments-section" data-section="upcoming">
-            <h2 style="color: #3f72e5;">Upcoming Appointments (${upcoming.length})</h2>
-            <div class="appointments-list" id="upcoming-list">
-              ${upcoming.map(apt => renderAppointmentCard(apt, true)).join('')}
+            <div class="view-toggle" role="group" aria-label="View mode">
+              <button type="button" data-view="table" class="${appointmentsUiState.view === 'table' ? 'active' : ''}">Table</button>
+              <button type="button" data-view="cards" class="${appointmentsUiState.view === 'cards' ? 'active' : ''}">Cards</button>
             </div>
           </div>
-        ` : ''}
+        </div>
 
-        ${past.length > 0 ? `
-          <div class="appointments-section" data-section="past">
-            <h2 style="color: #666;">Past Appointments (${past.length})</h2>
-            <div class="appointments-list" id="past-list">
-              ${past.map(apt => renderAppointmentCard(apt, false)).join('')}
-            </div>
+        ${renderSection('upcoming', 'Upcoming Appointments', upcoming, true)}
+
+        ${renderSection('past', 'Past Appointments', past, false)}
+
+        ${unknownDate.length > 0 ? `
+          <div class="appointments-section" data-section="unknown">
+            <h2 style="color: #666;">Appointments (Date Pending) (${unknownDate.length})</h2>
+            <p style="margin: 0 0 1rem 0; color: #666;">
+              These appointments were returned without a date/timezone from the clinic system. We can still show them, but we can’t categorize them as upcoming/past until the clinic provides full date/time.
+            </p>
+            ${appointmentsUiState.view === 'cards' ? `
+              <div class="appointments-list" id="unknown-list">
+                ${unknownDate.map(apt => renderAppointmentCard(apt, false)).join('')}
+              </div>
+            ` : `
+              <div class="sxrx-table-wrap">
+                <table class="sxrx-table">
+                  <thead>
+                    <tr>
+                      <th class="sortable" data-sort-key="name">Appointment</th>
+                      <th class="sortable" data-sort-key="start">Date</th>
+                      <th>Time</th>
+                      <th class="sortable" data-sort-key="status">Status</th>
+                      <th>Telemedicine</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${unknownDate.map(apt => renderAppointmentRow(apt, false)).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
           </div>
         ` : ''}
 
@@ -930,6 +1286,39 @@
     
     container.innerHTML = html;
 
+    // Init controls
+    const searchInput = document.getElementById('appointments-search');
+    if (searchInput) searchInput.value = appointmentsUiState.searchTerm || '';
+    const sectionFilter = document.getElementById('appointments-filter');
+    if (sectionFilter) sectionFilter.value = appointmentsUiState.sectionFilter || 'all';
+
+    const sortSelect = document.getElementById('appointments-sort');
+    if (sortSelect) {
+      sortSelect.value = sortValue;
+      sortSelect.addEventListener('change', (e) => {
+        const v = String(e.target.value || 'start:desc');
+        const [k, d] = v.split(':');
+        setAppointmentsSort(k, d);
+      });
+    }
+
+    const viewButtons = container.querySelectorAll('.view-toggle button[data-view]');
+    viewButtons.forEach(btn => {
+      btn.addEventListener('click', () => setAppointmentsView(btn.getAttribute('data-view')));
+    });
+
+    const sortableHeaders = container.querySelectorAll('th.sortable[data-sort-key]');
+    sortableHeaders.forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.getAttribute('data-sort-key') || 'start';
+        const nextDir = appointmentsUiState.sortKey === key && appointmentsUiState.sortDir === 'asc' ? 'desc' : 'asc';
+        setAppointmentsSort(key, nextDir);
+      });
+    });
+
+    // Apply current filter/search after rerender
+    try { filterAppointments(); } catch (e) {}
+
     // Add event listeners for schedule buttons
     const scheduleBtn = document.getElementById('schedule-new-appointment-btn');
     const scheduleFirstBtn = document.getElementById('schedule-first-appointment-btn');
@@ -943,22 +1332,55 @@
     
     // Initialize countdown timers for upcoming appointments
     upcoming.forEach(apt => {
-      const startTime = new Date(apt.startTime || apt.StartTime || 0);
-      if (startTime > new Date()) {
+      const startTime = getAppointmentStartMeta(apt).date;
+      if (startTime && startTime.getTime() > Date.now()) {
         initCountdown(apt.id || apt.ID, startTime);
       }
     });
   }
 
+  function renderAppointmentRow(apt, isUpcoming) {
+    const { appointmentId, appointmentName, appointmentType, status, startMeta, endMeta, startTime, endTime, meetingLink } = getAppointmentCoreFields(apt);
+
+    let statusClass = 'status-scheduled';
+    if (status.includes('cancelled')) statusClass = 'status-cancelled';
+    else if (status.includes('completed')) statusClass = 'status-completed';
+
+    const canCancel = !status.includes('cancelled') && !status.includes('completed') && (!startTime || startTime.getTime() > Date.now());
+    const canCalendar = !!startTime;
+
+    const dateLabel = startTime
+      ? startTime.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })
+      : 'Not provided';
+
+    const timeLabel = startTime
+      ? `${startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${(endTime || new Date(startTime.getTime() + 30 * 60000)).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+      : `${startMeta.raw || 'N/A'}${endMeta.raw ? ` - ${endMeta.raw}` : ''}`;
+
+    const searchable = `${appointmentName} ${appointmentType} ${status}`.toLowerCase();
+
+    return `
+      <tr class="${isUpcoming ? 'row-upcoming' : ''}" data-appointment-id="${appointmentId}" data-searchable="${searchable}">
+        <td>
+          <p class="table-title">${appointmentName}</p>
+          <p class="table-subtitle">${appointmentType}</p>
+        </td>
+        <td><span class="${startTime ? '' : 'table-muted'}">${dateLabel}</span></td>
+        <td><span class="${startTime ? '' : 'table-muted'}">${timeLabel}</span></td>
+        <td><span class="status-badge ${statusClass}">${status}</span></td>
+        <td>${meetingLink ? `<a href="${meetingLink}" target="_blank" class="table-link">Join</a>` : `<span class="table-muted">—</span>`}</td>
+        <td>
+          <div class="table-actions">
+            ${canCalendar ? `<button class="btn btn-sm btn-secondary" onclick="window.addToCalendar('${appointmentId}')">📅 Calendar</button>` : ''}
+            ${canCancel ? `<button class="btn btn-sm btn-danger" onclick="window.showCancelModal('${appointmentId}')">Cancel</button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
   function renderAppointmentCard(apt, isUpcoming) {
-    const startTime = new Date(apt.startTime || apt.StartTime || 0);
-    const endTime = new Date(apt.endTime || apt.EndTime || startTime.getTime() + 30 * 60000);
-    const status = (apt.status || apt.appointmentStatus || apt.AppointmentStatus || 'Scheduled').toLowerCase();
-    const appointmentName = apt.appointmentName || apt.AppointmentName || 'Appointment';
-    const appointmentType = apt.appointmentType || apt.AppointmentType || 'Consultation';
-    const meetingLink = apt.meetingLink || apt.MeetingLink || apt.telemedicineLink || 
-                       (apt.notes && apt.notes.match(/https?:\/\/[^\s]+(?:meet\.google\.com|zoom\.us)[^\s]*/i)?.[0]) || null;
-    const appointmentId = apt.id || apt.ID || apt.AppointmentID || apt.AppointmentId;
+    const { appointmentId, appointmentName, appointmentType, status, startMeta, endMeta, startTime, endTime, meetingLink } = getAppointmentCoreFields(apt);
     
     let statusClass = 'status-scheduled';
     if (status.includes('cancelled')) {
@@ -967,7 +1389,8 @@
       statusClass = 'status-completed';
     }
     
-    const canCancel = isUpcoming && !status.includes('cancelled') && !status.includes('completed');
+    const canCancel = !status.includes('cancelled') && !status.includes('completed') && (!startTime || startTime.getTime() > Date.now());
+    const canCalendar = !!startTime;
     
     return `
       <div class="appointment-card ${isUpcoming ? 'upcoming' : ''}" data-appointment-id="${appointmentId}" data-searchable="${appointmentName.toLowerCase()} ${appointmentType.toLowerCase()}">
@@ -981,7 +1404,7 @@
             <span class="status-badge ${statusClass}">${status}</span>
             ${canCancel ? `
               <div class="appointment-actions">
-                <button class="btn btn-sm btn-secondary" onclick="window.addToCalendar('${appointmentId}')">📅 Add to Calendar</button>
+                ${canCalendar ? `<button class="btn btn-sm btn-secondary" onclick="window.addToCalendar('${appointmentId}')">📅 Add to Calendar</button>` : ''}
                 <button class="btn btn-sm btn-danger" onclick="window.showCancelModal('${appointmentId}')">Cancel</button>
               </div>
             ` : ''}
@@ -991,11 +1414,15 @@
         <div class="appointment-details">
           <div class="detail-item">
             <span class="detail-label">Date</span>
-            <span class="detail-value date">${startTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span class="detail-value date">${startTime ? startTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Not provided'}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Time</span>
-            <span class="detail-value">${startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+            <span class="detail-value">${
+              startTime
+                ? `${startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${(endTime || new Date(startTime.getTime() + 30 * 60000)).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+                : `${startMeta.raw || 'N/A'}${endMeta.raw ? ` - ${endMeta.raw}` : ''}`
+            }</span>
           </div>
           ${meetingLink ? `
             <div class="detail-item">
@@ -1052,6 +1479,10 @@
   function filterAppointments() {
     const searchTerm = (document.getElementById('appointments-search')?.value || '').toLowerCase();
     const filterType = document.getElementById('appointments-filter')?.value || 'all';
+
+    // Persist UI state so rerenders keep user choices
+    appointmentsUiState.searchTerm = document.getElementById('appointments-search')?.value || '';
+    appointmentsUiState.sectionFilter = filterType;
     
     const sections = document.querySelectorAll('.appointments-section[data-section]');
     sections.forEach(section => {
@@ -1136,8 +1567,12 @@
     const appointment = appointmentsData.find(apt => (apt.id || apt.ID || apt.AppointmentID || apt.AppointmentId) === appointmentId);
     if (!appointment) return;
     
-    const startTime = new Date(appointment.startTime || appointment.StartTime || 0);
-    const endTime = new Date(appointment.endTime || appointment.EndTime || startTime.getTime() + 30 * 60000);
+    const startTime = getAppointmentStartMeta(appointment).date;
+    if (!startTime) {
+      alert('This appointment does not include a full date/time, so it cannot be added to your calendar yet.');
+      return;
+    }
+    const endTime = getAppointmentEndMeta(appointment).date || new Date(startTime.getTime() + 30 * 60000);
     const appointmentName = appointment.appointmentName || appointment.AppointmentName || 'Appointment';
     
     // Create iCal format
@@ -1184,6 +1619,8 @@
   };
 
   window.filterAppointments = filterAppointments;
+  window.setAppointmentsSort = setAppointmentsSort;
+  window.setAppointmentsView = setAppointmentsView;
 
   window.printAppointments = function() {
     window.print();

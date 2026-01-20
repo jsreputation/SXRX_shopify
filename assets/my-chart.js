@@ -8,8 +8,31 @@
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
   let currentCustomerId = null;
   let chartData = null;
+  const CHART_SORT_KEY = 'sxrx_chart_sort_state';
+  let chartUiState = {
+    searchTerm: '',
+    filter: 'all'
+  };
+  let chartSortState = {
+    documents: { key: 'date', dir: 'desc' }, // date | name | status
+    prescriptions: { key: 'date', dir: 'desc' }, // date | name | status
+    appointments: { key: 'start', dir: 'desc' } // start | name | status
+  };
 
   console.log(`[SXRX] my-chart loaded (${MY_CHART_VERSION})`, { BACKEND_API });
+
+  // Restore persisted sort state (best-effort)
+  try {
+    const raw = sessionStorage.getItem(CHART_SORT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') chartSortState = { ...chartSortState, ...parsed };
+    }
+  } catch (e) {}
+
+  function persistChartSort() {
+    try { sessionStorage.setItem(CHART_SORT_KEY, JSON.stringify(chartSortState)); } catch (e) {}
+  }
 
   function isNgrokBackend() {
     return /ngrok/i.test(BACKEND_API);
@@ -55,6 +78,25 @@
     }
     const text = await res.text().catch(() => '');
     return { nonJson: true, preview: text.slice(0, 300) };
+  }
+
+  function parseAppointmentDateTime(value) {
+    if (value == null) return { date: null, hasDate: false, hasTime: false, raw: '' };
+    const raw = String(value).trim();
+    if (!raw) return { date: null, hasDate: false, hasTime: false, raw: '' };
+
+    // Time-only values like "12:24:41" (observed from backend) have no date info.
+    const timeOnlyMatch = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (timeOnlyMatch) return { date: null, hasDate: false, hasTime: true, raw };
+
+    const normalized = raw.includes(' ') && !raw.includes('T') ? raw.replace(' ', 'T') : raw;
+    const d = new Date(normalized);
+    if (isNaN(d.getTime())) {
+      const hasTime = raw.includes(':');
+      const hasDate = /\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}/.test(raw);
+      return { date: null, hasDate, hasTime, raw };
+    }
+    return { date: d, hasDate: true, hasTime: raw.includes(':'), raw };
   }
 
   function resolveCustomerId() {
@@ -439,6 +481,70 @@
         content: '→';
         font-size: 1.25rem;
       }
+
+      .sxrx-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #e8e8e8;
+        border-radius: 12px;
+        background: #fff;
+      }
+
+      .sxrx-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 760px;
+      }
+
+      .sxrx-table thead th {
+        position: sticky;
+        top: 0;
+        background: #f9fafb;
+        z-index: 1;
+        text-align: left;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6b7280;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+      }
+
+      .sxrx-table thead th.sortable {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .sxrx-table tbody td {
+        padding: 0.95rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: top;
+        font-size: 0.95rem;
+        color: #111827;
+      }
+
+      .sxrx-table tbody tr:hover td {
+        background: #fafafa;
+      }
+
+      .table-muted {
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+
+      .table-title {
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+      }
+
+      .table-subtitle {
+        margin: 0.2rem 0 0 0;
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
       
       .loading-state {
         text-align: center;
@@ -647,6 +753,69 @@
     const patientInfo = data.patient || {};
     const questionnaire = data.questionnaire || {};
     
+    const safeDate = (val) => {
+      if (!val) return null;
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const cmp = (a, b, dir) => {
+      const mul = dir === 'desc' ? -1 : 1;
+      const aNull = a === null || a === undefined || a === '';
+      const bNull = b === null || b === undefined || b === '';
+      if (aNull && bNull) return 0;
+      if (aNull) return 1;
+      if (bNull) return -1;
+      if (typeof a === 'number' && typeof b === 'number') return (a - b) * mul;
+      return String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }) * mul;
+    };
+
+    const sortDocs = (docs) => {
+      const s = chartSortState.documents || { key: 'date', dir: 'desc' };
+      const list = Array.isArray(docs) ? [...docs] : [];
+      return list.sort((x, y) => {
+        if (s.key === 'name') return cmp(x.name || '', y.name || '', s.dir);
+        if (s.key === 'status') return cmp(x.status || '', y.status || '', s.dir);
+        const dx = safeDate(x.documentDate || x.DocumentDate || x.createdAt || x.CreatedDate);
+        const dy = safeDate(y.documentDate || y.DocumentDate || y.createdAt || y.CreatedDate);
+        return cmp(dx ? dx.getTime() : null, dy ? dy.getTime() : null, s.dir);
+      });
+    };
+
+    const sortRx = (rxs) => {
+      const s = chartSortState.prescriptions || { key: 'date', dir: 'desc' };
+      const list = Array.isArray(rxs) ? [...rxs] : [];
+      return list.sort((x, y) => {
+        if (s.key === 'name') return cmp(x.name || '', y.name || '', s.dir);
+        if (s.key === 'status') return cmp(x.status || '', y.status || '', s.dir);
+        const dx = safeDate(x.date || x.Date);
+        const dy = safeDate(y.date || y.Date);
+        return cmp(dx ? dx.getTime() : null, dy ? dy.getTime() : null, s.dir);
+      });
+    };
+
+    const sortAppts = (apts) => {
+      const s = chartSortState.appointments || { key: 'start', dir: 'desc' };
+      const list = Array.isArray(apts) ? [...apts] : [];
+      return list.sort((x, y) => {
+        const sx = parseAppointmentDateTime(x.startTime || x.StartTime || x.startDateTime || x.StartDateTime || 0);
+        const sy = parseAppointmentDateTime(y.startTime || y.StartTime || y.startDateTime || y.StartDateTime || 0);
+        if (s.key === 'name') return cmp(x.appointmentName || '', y.appointmentName || '', s.dir);
+        if (s.key === 'status') return cmp(x.status || '', y.status || '', s.dir);
+        return cmp(sx.date ? sx.date.getTime() : null, sy.date ? sy.date.getTime() : null, s.dir);
+      });
+    };
+
+    const docsSorted = sortDocs(data.documents || []);
+    const rxSorted = sortRx(data.prescriptions || []);
+    const apptsSorted = sortAppts(data.appointments || []);
+
+    const sortArrow = (section, key) => {
+      const s = chartSortState[section];
+      if (!s || s.key !== key) return '';
+      return s.dir === 'asc' ? ' ▲' : ' ▼';
+    };
+
     const html = `
       <div class="chart-wrapper">
         <div class="chart-header">
@@ -671,8 +840,8 @@
         </div>
         
         <div class="search-filter-bar">
-          <input type="text" class="search-input" id="chart-search" placeholder="Search documents, prescriptions..." oninput="window.filterChart()">
-          <select class="filter-select" id="chart-filter" onchange="window.filterChart()">
+          <input type="text" class="search-input" id="chart-search" placeholder="Search documents, prescriptions...">
+          <select class="filter-select" id="chart-filter">
             <option value="all">All Items</option>
             <option value="documents">Documents Only</option>
             <option value="prescriptions">Prescriptions Only</option>
@@ -740,99 +909,110 @@
         
         <div class="section-card" data-type="documents" id="documents-section">
           <h2>Medical Documents (${data.documents?.length || 0})</h2>
-          <div class="document-grid" id="documents-grid">
-            ${data.documents && data.documents.length > 0 ? data.documents.map(doc => `
-              <div class="document-card" data-searchable="${(doc.name || '').toLowerCase()} ${(doc.notes || '').toLowerCase()}">
-                <h3>${doc.name || 'Document'}</h3>
-                <div class="document-meta">
-                  <div class="meta-item">
-                    <strong>Date:</strong>
-                    <span>${doc.documentDate ? new Date(doc.documentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</span>
-                  </div>
-                  <div class="meta-item">
-                    <strong>Status:</strong>
-                    <span class="status-badge ${doc.status === 'Completed' ? 'status-completed' : doc.status === 'Active' ? 'status-active' : 'status-pending'}">${doc.status || 'Unknown'}</span>
-                  </div>
-                  ${doc.notes ? `
-                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e8e8e8;">
-                      <p style="color: #666; margin: 0; font-size: 0.875rem; line-height: 1.5;">${doc.notes}</p>
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            `).join('') : `
-              <div class="empty-state">
-                <div class="empty-state-icon">📄</div>
-                <h3>No Documents Found</h3>
-                <p>Your medical documents will appear here once they are added to your chart.</p>
-              </div>
-            `}
-          </div>
+          ${docsSorted.length > 0 ? `
+            <div class="sxrx-table-wrap">
+              <table class="sxrx-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-section="documents" data-sort-key="name">Name${sortArrow('documents','name')}</th>
+                    <th class="sortable" data-sort-section="documents" data-sort-key="date">Date${sortArrow('documents','date')}</th>
+                    <th class="sortable" data-sort-section="documents" data-sort-key="status">Status${sortArrow('documents','status')}</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${docsSorted.map(doc => {
+                    const dd = safeDate(doc.documentDate || doc.DocumentDate || doc.createdAt || doc.CreatedDate);
+                    const note = doc.notes || '';
+                    const searchable = `${doc.name || ''} ${note}`.toLowerCase();
+                    return `
+                      <tr data-searchable="${searchable}">
+                        <td><p class="table-title">${doc.name || 'Document'}</p></td>
+                        <td><span class="${dd ? '' : 'table-muted'}">${dd ? dd.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A'}</span></td>
+                        <td><span class="status-badge ${doc.status === 'Completed' ? 'status-completed' : doc.status === 'Active' ? 'status-active' : 'status-pending'}">${doc.status || 'Unknown'}</span></td>
+                        <td><span class="${note ? '' : 'table-muted'}">${note ? note : '—'}</span></td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `
+            <div class="empty-state">
+              <div class="empty-state-icon">📄</div>
+              <h3>No Documents Found</h3>
+              <p>Your medical documents will appear here once they are added to your chart.</p>
+            </div>
+          `}
         </div>
         
         <div class="section-card" data-type="prescriptions" id="prescriptions-section">
           <h2>Prescriptions (${data.prescriptions?.length || 0})</h2>
-          <div class="prescription-grid" id="prescriptions-grid">
-            ${data.prescriptions && data.prescriptions.length > 0 ? data.prescriptions.map(rx => `
-              <div class="prescription-card" data-searchable="${(rx.name || '').toLowerCase()} ${(rx.pharmacy || '').toLowerCase()}">
-                <h3>${rx.name || 'Prescription'}</h3>
-                <div class="prescription-meta">
-                  <div class="meta-item">
-                    <strong>Date:</strong>
-                    <span>${rx.date ? new Date(rx.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</span>
-                  </div>
-                  <div class="meta-item">
-                    <strong>Status:</strong>
-                    <span class="status-badge ${rx.status === 'Active' ? 'status-active' : rx.status === 'Completed' ? 'status-completed' : 'status-pending'}">${rx.status || 'Unknown'}</span>
-                  </div>
-                  ${rx.pharmacy ? `
-                    <div class="meta-item">
-                      <strong>Pharmacy:</strong>
-                      <span>${rx.pharmacy}</span>
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            `).join('') : `
-              <div class="empty-state">
-                <div class="empty-state-icon">💊</div>
-                <h3>No Prescriptions Found</h3>
-                <p>Your prescriptions will appear here once they are added to your chart.</p>
-              </div>
-            `}
-          </div>
+          ${rxSorted.length > 0 ? `
+            <div class="sxrx-table-wrap">
+              <table class="sxrx-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-section="prescriptions" data-sort-key="name">Medication${sortArrow('prescriptions','name')}</th>
+                    <th class="sortable" data-sort-section="prescriptions" data-sort-key="date">Date${sortArrow('prescriptions','date')}</th>
+                    <th class="sortable" data-sort-section="prescriptions" data-sort-key="status">Status${sortArrow('prescriptions','status')}</th>
+                    <th>Pharmacy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rxSorted.map(rx => {
+                    const dd = safeDate(rx.date || rx.Date);
+                    const searchable = `${rx.name || ''} ${rx.pharmacy || ''}`.toLowerCase();
+                    return `
+                      <tr data-searchable="${searchable}">
+                        <td><p class="table-title">${rx.name || 'Prescription'}</p></td>
+                        <td><span class="${dd ? '' : 'table-muted'}">${dd ? dd.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : 'N/A'}</span></td>
+                        <td><span class="status-badge ${rx.status === 'Active' ? 'status-active' : rx.status === 'Completed' ? 'status-completed' : 'status-pending'}">${rx.status || 'Unknown'}</span></td>
+                        <td><span class="${rx.pharmacy ? '' : 'table-muted'}">${rx.pharmacy || '—'}</span></td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `
+            <div class="empty-state">
+              <div class="empty-state-icon">💊</div>
+              <h3>No Prescriptions Found</h3>
+              <p>Your prescriptions will appear here once they are added to your chart.</p>
+            </div>
+          `}
         </div>
 
         ${data.appointments && data.appointments.length > 0 ? `
           <div class="section-card" data-type="appointments" id="appointments-section">
             <h2>Recent Appointments (${data.appointments.length})</h2>
-            <div class="appointment-grid" id="appointments-grid">
-              ${data.appointments.slice(0, 3).map(apt => {
-                const startTime = new Date(apt.startTime || 0);
-                const isUpcoming = startTime > new Date();
-                return `
-                  <div class="appointment-card" data-searchable="${(apt.appointmentName || '').toLowerCase()}" style="background: ${isUpcoming ? '#f0f7ff' : '#fafafa'}; border-color: ${isUpcoming ? '#3f72e5' : '#e8e8e8'};">
-                    <h3>${apt.appointmentName || 'Appointment'}</h3>
-                    <div class="document-meta">
-                      <div class="meta-item">
-                        <strong>Date:</strong>
-                        <span>${startTime.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                      </div>
-                      <div class="meta-item">
-                        <strong>Time:</strong>
-                        <span>${startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
-                      </div>
-                      <div class="meta-item">
-                        <strong>Status:</strong>
-                        <span class="status-badge ${apt.status === 'Scheduled' ? 'status-active' : apt.status === 'Completed' ? 'status-completed' : 'status-pending'}">${apt.status || 'Scheduled'}</span>
-                      </div>
-                      ${apt.meetingLink ? `
-                        <a href="${apt.meetingLink}" target="_blank" class="meeting-link">Join Meeting</a>
-                      ` : ''}
-                    </div>
-                  </div>
-                `;
-              }).join('')}
+            <div class="sxrx-table-wrap">
+              <table class="sxrx-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-section="appointments" data-sort-key="name">Appointment${sortArrow('appointments','name')}</th>
+                    <th class="sortable" data-sort-section="appointments" data-sort-key="start">Start${sortArrow('appointments','start')}</th>
+                    <th class="sortable" data-sort-section="appointments" data-sort-key="status">Status${sortArrow('appointments','status')}</th>
+                    <th>Telemedicine</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${apptsSorted.slice(0, 10).map(apt => {
+                    const startMeta = parseAppointmentDateTime(apt.startTime || apt.startDateTime || 0);
+                    const startTime = startMeta.date;
+                    const searchable = `${apt.appointmentName || ''} ${apt.status || ''}`.toLowerCase();
+                    return `
+                      <tr data-searchable="${searchable}">
+                        <td><p class="table-title">${apt.appointmentName || 'Appointment'}</p></td>
+                        <td><span class="${startTime ? '' : 'table-muted'}">${startTime ? startTime.toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: '2-digit' }) : (startMeta.raw || 'N/A')}</span></td>
+                        <td><span class="status-badge ${apt.status === 'Scheduled' ? 'status-active' : apt.status === 'Completed' ? 'status-completed' : 'status-pending'}">${apt.status || 'Scheduled'}</span></td>
+                        <td>${apt.meetingLink ? `<a href="${apt.meetingLink}" target="_blank" class="meeting-link">Join Meeting</a>` : `<span class="table-muted">—</span>`}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
             </div>
             ${data.appointments.length > 3 ? `
               <div style="text-align: center; margin-top: 1.5rem;">
@@ -847,11 +1027,52 @@
     `;
     
     container.innerHTML = html;
+
+    // Restore filter/search state and wire listeners
+    const searchInput = document.getElementById('chart-search');
+    if (searchInput) {
+      searchInput.value = chartUiState.searchTerm || '';
+      searchInput.addEventListener('input', filterChart);
+    }
+    const filterSelect = document.getElementById('chart-filter');
+    if (filterSelect) {
+      filterSelect.value = chartUiState.filter || 'all';
+      filterSelect.addEventListener('change', filterChart);
+    }
+
+    // Attach sorting listeners (avoid inline onclick due to CSP)
+    const sortHeaders = container.querySelectorAll('th.sortable[data-sort-section][data-sort-key]');
+    sortHeaders.forEach(th => {
+      th.addEventListener('click', () => {
+        const section = th.getAttribute('data-sort-section');
+        const key = th.getAttribute('data-sort-key');
+        if (section && key && window.setChartSort) window.setChartSort(section, key);
+      });
+    });
+
+    // Apply current filter/search after rerender
+    try { filterChart(); } catch (e) {}
   }
 
+  window.setChartSort = function(section, key) {
+    if (!chartSortState[section]) return;
+    const cur = chartSortState[section];
+    const nextDir = cur.key === key && cur.dir === 'asc' ? 'desc' : 'asc';
+    chartSortState = { ...chartSortState, [section]: { key, dir: nextDir } };
+    persistChartSort();
+    if (chartData) renderChart(chartData);
+    // Re-apply search filter after rerender
+    try { filterChart(); } catch (e) {}
+  };
+
   function filterChart() {
-    const searchTerm = (document.getElementById('chart-search')?.value || '').toLowerCase();
+    const searchTermRaw = (document.getElementById('chart-search')?.value || '');
+    const searchTerm = searchTermRaw.toLowerCase();
     const filterType = document.getElementById('chart-filter')?.value || 'all';
+
+    // Persist UI state so rerenders keep user choices
+    chartUiState.searchTerm = searchTermRaw;
+    chartUiState.filter = filterType;
     
     // Filter sections
     const sections = document.querySelectorAll('.section-card[data-type]');
