@@ -473,8 +473,18 @@
     </div>
 {%- endcase -%}
 {% endfor %}
-{%- if section.settings.enable_sticky_add_to_cart -%}
-{% render 'product-add-to-cart-sticky', product: product, media: first_image, color_picker: color_picker, color_picker_size: color_picker_size, color_picker_use_variants: color_picker_use_variants, picker_type: picker_type, form: form, is_disabled: is_disabled %}
+{%- liquid
+  assign tags_str = product.tags | join: ',' | downcase
+  assign requires_questionnaire = false
+  if product.metafields.sxrx.requires_questionnaire == true or product.metafields.sxrx.requires_questionnaire == 'true' or product.metafields.sxrx.requires_questionnaire.value == true
+    assign requires_questionnaire = true
+  elsif tags_str contains 'requires-questionnaire'
+    assign requires_questionnaire = true
+  endif
+-%}
+
+{%- if section.settings.enable_sticky_add_to_cart and requires_questionnaire == false -%}
+  {% render 'product-add-to-cart-sticky', product: product, media: first_image, color_picker: color_picker, color_picker_size: color_picker_size, color_picker_use_variants: color_picker_use_variants, picker_type: picker_type, form: form, is_disabled: is_disabled %}
 {%- endif -%}
 
 {{ sizing_popup }}

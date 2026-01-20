@@ -18,7 +18,13 @@
 			endif
 
 			assign requires_questionnaire = false
-			if product.tags contains 'requires-questionnaire'
+			assign tags_str = product.tags | join: ',' | downcase
+
+			# Prefer metafield if present (CSV imports set this)
+			if product.metafields.sxrx.requires_questionnaire == true or product.metafields.sxrx.requires_questionnaire == 'true' or product.metafields.sxrx.requires_questionnaire.value == true
+				assign requires_questionnaire = true
+			elsif tags_str contains 'requires-questionnaire'
+				# Use substring match so it still works if tags were imported as a single combined tag string
 				assign requires_questionnaire = true
 			endif
     -%}
