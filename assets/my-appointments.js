@@ -133,8 +133,6 @@
     const meetingLink =
       apt.meetingLink ||
       apt.MeetingLink ||
-      apt.telemedicineLink ||
-      (apt.notes && apt.notes.match(/https?:\/\/[^\s]+(?:meet\.google\.com|zoom\.us)[^\s]*/i)?.[0]) ||
       null;
     const appointmentId = apt.id || apt.ID || apt.AppointmentID || apt.AppointmentId;
     return { appointmentId, appointmentName, appointmentType, status, startMeta, endMeta, startTime, endTime, meetingLink };
