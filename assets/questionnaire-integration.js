@@ -153,7 +153,8 @@
     }
     
     // Redirect to questionnaire page
-    window.location.href = `/pages/questionnaire?${params.toString()}`;
+    const basePath = (window.SXRX && window.SXRX.questionnairePagePath) ? window.SXRX.questionnairePagePath : '/pages/questionnaire';
+    window.location.href = `${basePath}?${params.toString()}`;
   }
 
   // Handle purchase button click

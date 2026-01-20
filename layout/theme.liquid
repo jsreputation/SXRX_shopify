@@ -107,6 +107,8 @@
 		window.SXRX = window.SXRX || {};
 		window.SXRX.isLoggedIn = {{ customer != blank | json }};
 		window.SXRX.customerId = {{ customer.id | json }};
+		// Questionnaire page path (allow handle to be questionnaire or questionnaire-1, etc.)
+		window.SXRX.questionnairePagePath = {{ pages['questionnaire'].url | default: pages['questionnaire-1'].url | default: '/pages/questionnaire' | json }};
 		try {
 			if (window.SXRX.customerId) {
 				sessionStorage.setItem('customerId', String(window.SXRX.customerId));
