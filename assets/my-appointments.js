@@ -10,11 +10,10 @@
   let appointmentsData = null;
   let lastPatientInfo = null;
   let countdownIntervals = [];
-  const APPT_VIEW_KEY = 'sxrx_appt_view';
   const APPT_SORT_KEY = 'sxrx_appt_sort_key';
   const APPT_SORT_DIR = 'sxrx_appt_sort_dir';
   let appointmentsUiState = {
-    view: 'table', // table | cards
+    // Table-only UI
     sortKey: 'start', // start | name | status | type
     sortDir: 'desc', // asc | desc
     searchTerm: '',
@@ -33,10 +32,8 @@
 
   // Restore persisted UI state (best effort)
   try {
-    const v = safeGetStorage(APPT_VIEW_KEY);
     const k = safeGetStorage(APPT_SORT_KEY);
     const d = safeGetStorage(APPT_SORT_DIR);
-    if (v === 'table' || v === 'cards') appointmentsUiState.view = v;
     if (k) appointmentsUiState.sortKey = k;
     if (d === 'asc' || d === 'desc') appointmentsUiState.sortDir = d;
   } catch (e) {}
@@ -175,14 +172,6 @@
 
       return 0;
     });
-  }
-
-  function setAppointmentsView(view) {
-    if (view !== 'table' && view !== 'cards') return;
-    syncAppointmentsUiFromDom();
-    appointmentsUiState.view = view;
-    safeSetStorage(APPT_VIEW_KEY, view);
-    if (appointmentsData) renderAppointments(appointmentsData, lastPatientInfo);
   }
 
   function setAppointmentsSort(sortKey, sortDir) {
@@ -355,31 +344,7 @@
         flex-wrap: wrap;
       }
 
-      .view-toggle {
-        display: inline-flex;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 0.25rem;
-        gap: 0.25rem;
-      }
-
-      .view-toggle button {
-        border: 0;
-        background: transparent;
-        padding: 0.6rem 0.9rem;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 0.875rem;
-        color: #374151;
-      }
-
-      .view-toggle button.active {
-        background: #ffffff;
-        color: #111827;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-      }
+      /* Table-only: no view toggle */
 
       .sxrx-table-wrap {
         width: 100%;
@@ -1075,10 +1040,9 @@
 
     lastPatientInfo = patientInfo || null;
 
-    // Separate appointments by status / date availability
+    // Separate appointments into upcoming/past (no "Date Pending" view)
     let upcoming = [];
     let past = [];
-    let unknownDate = [];
     const now = Date.now();
 
     appointments.forEach(apt => {
@@ -1092,8 +1056,8 @@
       }
 
       if (!startMs) {
-        // Backend sometimes returns time-only (no date), which can't be categorized safely.
-        unknownDate.push(apt);
+        // If the clinic didn't provide a full datetime, treat non-cancelled/non-completed as upcoming.
+        upcoming.push(apt);
         return;
       }
 
@@ -1103,23 +1067,11 @@
 
     upcoming = sortAppointmentsList(upcoming);
     past = sortAppointmentsList(past);
-    unknownDate = sortAppointmentsList(unknownDate);
 
     const sortValue = `${appointmentsUiState.sortKey}:${appointmentsUiState.sortDir}`;
 
     const renderSection = (sectionKey, title, items, isUpcomingSection) => {
       if (!items || items.length === 0) return '';
-
-      if (appointmentsUiState.view === 'cards') {
-        return `
-          <div class="appointments-section" data-section="${sectionKey}">
-            <h2 style="color: ${sectionKey === 'upcoming' ? '#3f72e5' : '#666'};">${title} (${items.length})</h2>
-            <div class="appointments-list" id="${sectionKey}-list">
-              ${items.map(apt => renderAppointmentCard(apt, !!isUpcomingSection)).join('')}
-            </div>
-          </div>
-        `;
-      }
 
       return `
         <div class="appointments-section" data-section="${sectionKey}">
@@ -1211,50 +1163,13 @@
             <option value="all">All Appointments</option>
             <option value="upcoming">Upcoming Only</option>
             <option value="past">Past Only</option>
-            <option value="unknown">Date Pending</option>
           </select>
-            <div class="view-toggle" role="group" aria-label="View mode">
-              <button type="button" data-view="table" class="${appointmentsUiState.view === 'table' ? 'active' : ''}">Table</button>
-              <button type="button" data-view="cards" class="${appointmentsUiState.view === 'cards' ? 'active' : ''}">Cards</button>
-            </div>
           </div>
         </div>
 
         ${renderSection('upcoming', 'Upcoming Appointments', upcoming, true)}
 
         ${renderSection('past', 'Past Appointments', past, false)}
-
-        ${unknownDate.length > 0 ? `
-          <div class="appointments-section" data-section="unknown">
-            <h2 style="color: #666;">Appointments (Date Pending) (${unknownDate.length})</h2>
-            <p style="margin: 0 0 1rem 0; color: #666;">
-              These appointments were returned without a date/timezone from the clinic system. We can still show them, but we can’t categorize them as upcoming/past until the clinic provides full date/time.
-            </p>
-            ${appointmentsUiState.view === 'cards' ? `
-              <div class="appointments-list" id="unknown-list">
-                ${unknownDate.map(apt => renderAppointmentCard(apt, false)).join('')}
-              </div>
-            ` : `
-              <div class="sxrx-table-wrap">
-                <table class="sxrx-table">
-                  <thead>
-                    <tr>
-                      <th class="sortable" data-sort-key="name">Appointment</th>
-                      <th class="sortable" data-sort-key="start">Date</th>
-                      <th>Time</th>
-                      <th class="sortable" data-sort-key="status">Status</th>
-                      <th>Telemedicine</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${unknownDate.map(apt => renderAppointmentRow(apt, false)).join('')}
-                  </tbody>
-                </table>
-              </div>
-            `}
-          </div>
-        ` : ''}
 
         ${appointments.length === 0 ? `
           <div class="no-appointments">
@@ -1301,11 +1216,6 @@
         setAppointmentsSort(k, d);
       });
     }
-
-    const viewButtons = container.querySelectorAll('.view-toggle button[data-view]');
-    viewButtons.forEach(btn => {
-      btn.addEventListener('click', () => setAppointmentsView(btn.getAttribute('data-view')));
-    });
 
     const sortableHeaders = container.querySelectorAll('th.sortable[data-sort-key]');
     sortableHeaders.forEach(th => {
