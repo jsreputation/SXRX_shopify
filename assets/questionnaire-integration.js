@@ -206,6 +206,7 @@
   }
 
   // Handle purchase button click
+  // The custom "Purchase" button uses the selected purchase type (or defaults to subscription)
   function handlePurchaseButtonClick(event) {
     event.preventDefault();
     
@@ -214,7 +215,7 @@
     const quizId = button.getAttribute('data-quiz-id');
     const customerId = button.getAttribute('data-customer-id');
     
-    // Get selected purchase type
+    // Get selected purchase type (respects user's radio button selection)
     const purchaseTypeRadio = document.querySelector('input[name="purchase-type"]:checked');
     const purchaseType = purchaseTypeRadio ? purchaseTypeRadio.value : 'subscription';
     
@@ -251,13 +252,18 @@
       }
     };
 
-    const getPurchaseType = () => {
+    const getPurchaseType = (forceSubscription = false) => {
+      // If Buy Now is clicked, always use subscription
+      if (forceSubscription) {
+        return 'subscription';
+      }
+      // Otherwise, check the radio button selection
       const purchaseTypeRadio = document.querySelector('input[name="purchase-type"]:checked');
       return purchaseTypeRadio ? purchaseTypeRadio.value : 'subscription';
     };
 
-    const goToQuiz = () => {
-      const purchaseType = getPurchaseType();
+    const goToQuiz = (forceSubscription = false) => {
+      const purchaseType = getPurchaseType(forceSubscription);
       try {
         sessionStorage.setItem(`purchaseType_${productId}`, purchaseType);
         sessionStorage.setItem(`redirectProduct_${productId}`, window.location.href);
@@ -265,14 +271,15 @@
       redirectToQuestionnaire(productId, quizId, customerId, purchaseType);
     };
 
-    // Intercept any attempt to add-to-cart or buy-now (dynamic checkout) before quiz completion.
+    // Intercept any attempt to add-to-cart before quiz completion.
+    // Regular add-to-cart uses the selected purchase type (or defaults to subscription).
     const interceptSubmit = (evt) => {
       if (!shouldGate()) return;
       try {
         evt.preventDefault();
         evt.stopImmediatePropagation();
       } catch (e) {}
-      goToQuiz();
+      goToQuiz(false); // Use selected purchase type
     };
 
     // Capture phase so we beat the theme's product.js ajax handler.
@@ -282,7 +289,8 @@
       form.addEventListener('submit', interceptSubmit, true);
     });
 
-    // Also intercept direct clicks on Shopify payment buttons (some themes submit differently).
+    // Intercept clicks on Shopify payment buttons (Buy Now / dynamic checkout).
+    // Buy Now always uses subscription, regardless of radio button selection.
     document.querySelectorAll('.shopify-payment-button__button, .shopify-payment-button button').forEach((btn) => {
       if (btn.hasAttribute('data-sxrx-quiz-gate')) return;
       btn.setAttribute('data-sxrx-quiz-gate', 'true');
@@ -292,7 +300,7 @@
           evt.preventDefault();
           evt.stopImmediatePropagation();
         } catch (e) {}
-        goToQuiz();
+        goToQuiz(true); // Force subscription for Buy Now
       }, true);
     });
   }
