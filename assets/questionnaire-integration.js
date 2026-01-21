@@ -4,9 +4,18 @@
 (function() {
   'use strict';
 
-  const QUESTIONNAIRE_INTEGRATION_VERSION = '2026-01-20-1';
+  const QUESTIONNAIRE_INTEGRATION_VERSION = '2026-01-21-1';
   const BACKEND_API = 'https://intermomentary-hendrix-phreatic.ngrok-free.dev';
   console.log(`[SXRX] questionnaire-integration loaded (${QUESTIONNAIRE_INTEGRATION_VERSION})`, { BACKEND_API });
+
+  function safeJsonParse(value) {
+    if (typeof value !== 'string') return null;
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return null;
+    }
+  }
 
   function isNgrokBackend() {
     return /ngrok/i.test(BACKEND_API);
@@ -49,11 +58,14 @@
       if (!response.ok) return { requiresQuestionnaire: false, completed: false };
       
       const data = await response.json();
-      return {
-        requiresQuestionnaire: data.requiresQuestionnaire || false,
-        completed: data.customerHasCompleted || false,
-        status: data.questionnaireStatus || 'not_started'
-      };
+
+      // Backend response shape is { product, validation: { requiresQuestionnaire, ... } }
+      // This function is best-effort only (signed-in shortcut). Main gating uses sessionStorage + quiz flow.
+      const requiresQuestionnaire = !!(data?.requiresQuestionnaire ?? data?.validation?.requiresQuestionnaire);
+      const status = data?.questionnaireStatus || 'not_started';
+      const completed = !!(data?.customerHasCompleted || status === 'completed' || status === 'approved');
+
+      return { requiresQuestionnaire, completed, status };
     } catch (error) {
       console.error('Error checking questionnaire status:', error);
       return { requiresQuestionnaire: false, completed: false };
@@ -70,6 +82,28 @@
       const p = String(pathname || window.location.pathname || '');
       const m = p.match(/^\/pages\/([^/?#]+)/i);
       return m && m[1] ? decodeURIComponent(m[1]) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function getProductHandleFromLocation() {
+    try {
+      const p = String(window.location.pathname || '');
+      const m = p.match(/^\/products\/([^/?#]+)/i);
+      return m && m[1] ? decodeURIComponent(m[1]) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function getSelectedVariantIdFromProductPage() {
+    try {
+      const el =
+        document.querySelector('form[action*="/cart/add"] input[name="id"]') ||
+        document.querySelector('input[name="id"]');
+      const v = el && el.value ? String(el.value).trim() : '';
+      return v || null;
     } catch (e) {
       return null;
     }
@@ -151,6 +185,20 @@
     if (customerId) {
       params.append('customer', customerId);
     }
+
+    // Persist selected variant/handle so the questionnaire page can auto-add-to-cart after approval.
+    try {
+      const variantId = getSelectedVariantIdFromProductPage();
+      if (variantId) {
+        params.append('variant_id', variantId);
+        sessionStorage.setItem(`variant_id_${productId}`, String(variantId));
+      }
+
+      const handle = getProductHandleFromLocation();
+      if (handle) {
+        sessionStorage.setItem(`product_handle_${productId}`, String(handle));
+      }
+    } catch (e) {}
     
     // Redirect to questionnaire page
     const basePath = (window.SXRX && window.SXRX.questionnairePagePath) ? window.SXRX.questionnairePagePath : '/pages/questionnaire';
@@ -253,13 +301,39 @@
   function initRevenueHuntQuiz(quizId) {
     // Listen for RevenueHunt completion event
     window.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'revenuehunt-quiz-completed') {
-        handleQuizCompletion(event.data);
+      const raw = event.data;
+      const parsed = safeJsonParse(raw);
+      const data = parsed || raw;
+      if (!data || typeof data !== 'object') return;
+
+      // Only process messages that look like RevenueHunt quiz completion / response payloads.
+      const origin = String(event.origin || '');
+      const fromRevenueHunt = /revenuehunt/i.test(origin);
+      const typeStr = String(data.type || data.event || data.name || '').toLowerCase();
+      const looksCompleted =
+        typeStr.includes('completed') ||
+        typeStr.includes('finished') ||
+        typeStr.includes('quiz_completed') ||
+        data.quizCompleted === true ||
+        data.completed === true;
+      const looksLikeQuizPayload =
+        !!(data.answers || data.answersByBlock || data.recommendationsBySlot || data.responseId || data.quizId || data.quiz_id || data.resultRef);
+
+      if ((fromRevenueHunt && looksCompleted) || (looksCompleted && looksLikeQuizPayload)) {
+        handleQuizCompletion(data.detail || data);
       }
     });
 
     // Also listen for RevenueHunt's custom event
     document.addEventListener('revenuehunt:quiz:completed', function(event) {
+      handleQuizCompletion(event.detail);
+    });
+
+    // Some installations emit slightly different event names
+    document.addEventListener('revenuehunt:quiz:finished', function(event) {
+      handleQuizCompletion(event.detail);
+    });
+    document.addEventListener('revenuehunt:quiz:submitted', function(event) {
       handleQuizCompletion(event.detail);
     });
   }
@@ -301,13 +375,17 @@
           sessionStorage.setItem(`prescription_id_${productId}`, result.prescriptionId || '');
           
           // Get product variant ID and redirect to checkout
-          const variantId = urlParams.get('variant_id') || getVariantIdFromProduct(productId);
+          const variantId =
+            urlParams.get('variant_id') ||
+            sessionStorage.getItem(`variant_id_${productId}`) ||
+            getVariantIdFromProduct(productId);
           if (variantId) {
             // Add product to cart and redirect to checkout
             addToCartAndCheckout(productId, variantId, purchaseType);
           } else {
             // Fallback: redirect back to product page with completion flag
-            const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
+            const handle = getProductHandle(productId);
+            const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || (handle ? `/products/${handle}` : '/cart');
             window.location.href = redirectUrl + '?questionnaire_completed=true&action=proceed_to_checkout';
           }
         } else if (result.action === 'schedule_consultation') {
@@ -316,7 +394,8 @@
         } else {
           // Fallback for other actions (e.g., 'allow_purchase' for backward compatibility)
           sessionStorage.setItem(`questionnaire_completed_${productId}`, 'true');
-          const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
+          const handle = getProductHandle(productId);
+          const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || (handle ? `/products/${handle}` : '/cart');
           window.location.href = redirectUrl + '?questionnaire_completed=true';
         }
       } else {
@@ -330,8 +409,18 @@
 
   // Get product handle from ID (helper function)
   function getProductHandle(productId) {
-    // This would ideally come from the backend or be stored
-    // For now, we'll use the product ID in the URL
+    try {
+      const stored = sessionStorage.getItem(`product_handle_${productId}`);
+      if (stored) return String(stored);
+    } catch (e) {}
+    try {
+      const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`);
+      if (redirectUrl) {
+        const u = new URL(redirectUrl, window.location.origin);
+        const m = u.pathname.match(/^\/products\/([^/?#]+)/i);
+        if (m && m[1]) return decodeURIComponent(m[1]);
+      }
+    } catch (e) {}
     return '';
   }
 
@@ -386,7 +475,8 @@
     } catch (error) {
       console.error('Error adding to cart:', error);
       // Fallback: redirect to product page
-      const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || `/products/${getProductHandle(productId)}`;
+      const handle = getProductHandle(productId);
+      const redirectUrl = sessionStorage.getItem(`redirectProduct_${productId}`) || (handle ? `/products/${handle}` : '/cart');
       window.location.href = redirectUrl + '?questionnaire_completed=true&action=proceed_to_checkout';
     }
   }
@@ -476,6 +566,71 @@
       container.innerHTML = `<p class="message ${type}">${message}</p>`;
       container.style.display = 'block';
     }
+  }
+
+  // Fallback: if RevenueHunt shows an "Approved for Treatment" result screen but no completion event fires,
+  // proceed to checkout using the variant_id we persisted during redirect.
+  function initApprovedResultAutoProceedWatcher() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product') || window.currentProductId;
+    if (!productId) return;
+
+    let handled = false;
+    const maxMs = 120000;
+    const start = Date.now();
+
+    const matchesApprovedScreen = () => {
+      // Prefer explicit heading match; fallback to body text.
+      const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+      const headingHit = headings.some(h => /approved\s+for\s+treatment/i.test(String(h.textContent || '')));
+      if (headingHit) return true;
+      const bodyText = String(document.body && document.body.textContent ? document.body.textContent : '');
+      return /approved\s+for\s+treatment/i.test(bodyText);
+    };
+
+    const tick = () => {
+      if (handled) return;
+      if (Date.now() - start > maxMs) return;
+      if (!matchesApprovedScreen()) return;
+
+      handled = true;
+      try {
+        sessionStorage.setItem(`questionnaire_completed_${productId}`, 'true');
+      } catch (e) {}
+
+      const purchaseType =
+        urlParams.get('purchaseType') ||
+        (function() {
+          try { return sessionStorage.getItem(`purchaseType_${productId}`) || 'subscription'; } catch (e) { return 'subscription'; }
+        })();
+
+      const variantId =
+        urlParams.get('variant_id') ||
+        (function() {
+          try { return sessionStorage.getItem(`variant_id_${productId}`); } catch (e) { return null; }
+        })();
+
+      // If we have a variant id, we can complete the flow automatically.
+      if (variantId) {
+        showMessage('Approved. Redirecting you to checkout…', 'success');
+        addToCartAndCheckout(productId, variantId, purchaseType);
+        return;
+      }
+
+      // Otherwise, bounce back to product page so the user can complete purchase.
+      showMessage('Approved. Returning you to the product page to complete checkout…', 'success');
+      const redirectUrl = (function() {
+        try { return sessionStorage.getItem(`redirectProduct_${productId}`); } catch (e) { return null; }
+      })();
+      const handle = getProductHandle(productId);
+      const fallback = handle ? `/products/${handle}` : '/cart';
+      window.location.href = (redirectUrl || fallback) + '?questionnaire_completed=true&action=proceed_to_checkout';
+    };
+
+    const interval = setInterval(() => {
+      try { tick(); } catch (e) {}
+      if (handled || Date.now() - start > maxMs) clearInterval(interval);
+    }, 1000);
   }
 
   // Enable add to cart after questionnaire completion
@@ -625,6 +780,9 @@
             }
           } catch (e) {}
         }, 2500);
+
+        // If RevenueHunt renders the result screen but doesn't fire an event, still proceed.
+        initApprovedResultAutoProceedWatcher();
       } else {
         console.error('Invalid or placeholder Quiz ID:', quizId);
         showMessage('Quiz configuration error. Please contact support.', 'error');
