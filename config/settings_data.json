@@ -1,5 +1,4 @@
-
-{
+ {
   "current": {
     "heading_font": "inter_n6",
     "heading_font_letter_spacing": -20,
@@ -31,22 +30,29 @@
     "search_product_list": [],
     "content_for_index": [],
     "blocks": {
-      "2209279550302034861": {
-        "type": "shopify://apps/revenuehunt-recommender-quiz/blocks/link-popup/672f3d48-fd3b-4227-8778-c6e58c4f8a98",
-        "disabled": false,
-        "settings": {
-          "show_list": false
-        }
-      },
-      "16250556887416161327": {
-        "type": "shopify://apps/easy-appointment-booking/blocks/select_time/cc7b690c-65b5-4bb4-a46c-1e4bd73e1c12",
-        "disabled": false,
-        "settings": {}
-      },
       "3886181796285292942": {
         "type": "shopify://apps/cowlendar-booking/blocks/app-embed/6d8b8f6a-9b3c-42b8-b2e6-a758c38d45bf",
         "disabled": false,
         "settings": {}
+      },
+      "5537102726230261467": {
+        "type": "shopify://apps/revenuehunt-recommender-quiz/blocks/v2-link-quiz/672f3d48-fd3b-4227-8778-c6e58c4f8a98",
+        "disabled": false,
+        "settings": {
+          "quiz_width": "100",
+          "quiz_height": "100",
+          "quiz_z_index": 100,
+          "popup_close_color": "#777777",
+          "show_list": true,
+          "quiz_id": ""
+        }
+      },
+      "2209279550302034861": {
+        "type": "shopify://apps/revenuehunt-recommender-quiz/blocks/link-popup/672f3d48-fd3b-4227-8778-c6e58c4f8a98",
+        "disabled": true,
+        "settings": {
+          "show_list": false
+        }
       }
     }
   },

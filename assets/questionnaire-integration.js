@@ -299,8 +299,13 @@
 
   // Initialize RevenueHunt quiz on questionnaire page
   function initRevenueHuntQuiz(quizId) {
+    let completionHandled = false; // Prevent duplicate handling
+    
     // Listen for RevenueHunt completion event
     window.addEventListener('message', function(event) {
+      // Prevent duplicate handling
+      if (completionHandled) return;
+      
       const raw = event.data;
       const parsed = safeJsonParse(raw);
       const data = parsed || raw;
@@ -319,33 +324,60 @@
       const looksLikeQuizPayload =
         !!(data.answers || data.answersByBlock || data.recommendationsBySlot || data.responseId || data.quizId || data.quiz_id || data.resultRef);
 
-      if ((fromRevenueHunt && looksCompleted) || (looksCompleted && looksLikeQuizPayload)) {
+      // Require BOTH completion indicator AND quiz payload data to prevent false positives
+      if ((fromRevenueHunt && looksCompleted && looksLikeQuizPayload) || (looksCompleted && looksLikeQuizPayload && (data.answers || data.responseId))) {
+        completionHandled = true;
         handleQuizCompletion(data.detail || data);
       }
     });
 
     // Also listen for RevenueHunt's custom event
     document.addEventListener('revenuehunt:quiz:completed', function(event) {
-      handleQuizCompletion(event.detail);
+      if (completionHandled) return;
+      if (event.detail && (event.detail.answers || event.detail.responseId)) {
+        completionHandled = true;
+        handleQuizCompletion(event.detail);
+      }
     });
 
     // Some installations emit slightly different event names
     document.addEventListener('revenuehunt:quiz:finished', function(event) {
-      handleQuizCompletion(event.detail);
+      if (completionHandled) return;
+      if (event.detail && (event.detail.answers || event.detail.responseId)) {
+        completionHandled = true;
+        handleQuizCompletion(event.detail);
+      }
     });
     document.addEventListener('revenuehunt:quiz:submitted', function(event) {
-      handleQuizCompletion(event.detail);
+      if (completionHandled) return;
+      if (event.detail && (event.detail.answers || event.detail.responseId)) {
+        completionHandled = true;
+        handleQuizCompletion(event.detail);
+      }
     });
   }
 
   // Handle quiz completion
   async function handleQuizCompletion(quizData) {
     try {
+      // Validate that we have actual quiz completion data
+      // Prevent premature triggers from quiz initialization or other events
+      if (!quizData || (typeof quizData === 'object' && Object.keys(quizData).length === 0)) {
+        console.log('[SXRX] Ignoring empty quiz completion event');
+        return;
+      }
+      
       // Get product ID and customer ID from URL or storage
       const urlParams = new URLSearchParams(window.location.search);
       const productId = urlParams.get('product') || window.currentProductId;
       const customerId = urlParams.get('customer') || window.customerId;
       const purchaseType = urlParams.get('purchaseType') || sessionStorage.getItem(`purchaseType_${productId}`) || 'subscription';
+      
+      // Additional validation: ensure we're actually on the questionnaire page
+      if (!window.location.pathname.includes('questionnaire')) {
+        console.log('[SXRX] Ignoring quiz completion event - not on questionnaire page');
+        return;
+      }
       
       const headers = {
         'Content-Type': 'application/json'
@@ -570,6 +602,10 @@
 
   // Fallback: if RevenueHunt shows an "Approved for Treatment" result screen but no completion event fires,
   // proceed to checkout using the variant_id we persisted during redirect.
+  // This is a LAST RESORT fallback - only triggers if:
+  // 1. At least 15 seconds have passed (quiz should be loaded)
+  // 2. "Approved for Treatment" text has been visible for at least 5 consecutive seconds
+  // 3. No completion event has fired yet
   function initApprovedResultAutoProceedWatcher() {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('product') || window.currentProductId;
@@ -577,54 +613,92 @@
 
     let handled = false;
     const maxMs = 120000;
+    const minWaitMs = 15000; // Wait at least 15 seconds before checking
+    const requiredVisibleMs = 5000; // Text must be visible for 5 consecutive seconds
     const start = Date.now();
+    let firstSeenAt = null;
 
     const matchesApprovedScreen = () => {
-      // Prefer explicit heading match; fallback to body text.
+      // Only check visible elements (not hidden or in popups that aren't shown)
       const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-      const headingHit = headings.some(h => /approved\s+for\s+treatment/i.test(String(h.textContent || '')));
+      const visibleHeadings = headings.filter(h => {
+        const style = window.getComputedStyle(h);
+        return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+      });
+      const headingHit = visibleHeadings.some(h => /approved\s+for\s+treatment/i.test(String(h.textContent || '')));
       if (headingHit) return true;
-      const bodyText = String(document.body && document.body.textContent ? document.body.textContent : '');
-      return /approved\s+for\s+treatment/i.test(bodyText);
+      
+      // Also check for completion indicators in RevenueHunt UI
+      const revenueHuntComplete = document.querySelector('[data-revenuehunt-complete], .revenuehunt-complete, [class*="complete"]');
+      if (revenueHuntComplete) {
+        const style = window.getComputedStyle(revenueHuntComplete);
+        if (style.display !== 'none' && style.visibility !== 'hidden') {
+          return true;
+        }
+      }
+      
+      return false;
     };
 
     const tick = () => {
       if (handled) return;
-      if (Date.now() - start > maxMs) return;
-      if (!matchesApprovedScreen()) return;
+      const elapsed = Date.now() - start;
+      if (elapsed > maxMs) return;
+      
+      // Don't start checking until minimum wait time has passed
+      if (elapsed < minWaitMs) return;
+      
+      // Check if approved screen is visible
+      if (matchesApprovedScreen()) {
+        // First time seeing it - record the timestamp
+        if (firstSeenAt === null) {
+          firstSeenAt = Date.now();
+          return; // Wait for next tick
+        }
+        
+        // Check if it's been visible long enough
+        const visibleDuration = Date.now() - firstSeenAt;
+        if (visibleDuration < requiredVisibleMs) {
+          return; // Not visible long enough yet
+        }
+        
+        // Text has been visible for required duration - proceed
+        handled = true;
+        try {
+          sessionStorage.setItem(`questionnaire_completed_${productId}`, 'true');
+        } catch (e) {}
 
-      handled = true;
-      try {
-        sessionStorage.setItem(`questionnaire_completed_${productId}`, 'true');
-      } catch (e) {}
+        const purchaseType =
+          urlParams.get('purchaseType') ||
+          (function() {
+            try { return sessionStorage.getItem(`purchaseType_${productId}`) || 'subscription'; } catch (e) { return 'subscription'; }
+          })();
 
-      const purchaseType =
-        urlParams.get('purchaseType') ||
-        (function() {
-          try { return sessionStorage.getItem(`purchaseType_${productId}`) || 'subscription'; } catch (e) { return 'subscription'; }
+        const variantId =
+          urlParams.get('variant_id') ||
+          (function() {
+            try { return sessionStorage.getItem(`variant_id_${productId}`); } catch (e) { return null; }
+          })();
+
+        // If we have a variant id, we can complete the flow automatically.
+        if (variantId) {
+          showMessage('Approved. Redirecting you to checkout…', 'success');
+          addToCartAndCheckout(productId, variantId, purchaseType);
+          return;
+        }
+
+        // Otherwise, bounce back to product page so the user can complete purchase.
+        showMessage('Approved. Returning you to the product page to complete checkout…', 'success');
+        const redirectUrl = (function() {
+          try { return sessionStorage.getItem(`redirectProduct_${productId}`); } catch (e) { return null; }
         })();
-
-      const variantId =
-        urlParams.get('variant_id') ||
-        (function() {
-          try { return sessionStorage.getItem(`variant_id_${productId}`); } catch (e) { return null; }
-        })();
-
-      // If we have a variant id, we can complete the flow automatically.
-      if (variantId) {
-        showMessage('Approved. Redirecting you to checkout…', 'success');
-        addToCartAndCheckout(productId, variantId, purchaseType);
-        return;
+        const handle = getProductHandle(productId);
+        const fallback = handle ? `/products/${handle}` : '/cart';
+        window.location.href = (redirectUrl || fallback) + '?questionnaire_completed=true&action=proceed_to_checkout';
+      } else {
+        // Text disappeared - reset the timer
+        firstSeenAt = null;
       }
-
-      // Otherwise, bounce back to product page so the user can complete purchase.
-      showMessage('Approved. Returning you to the product page to complete checkout…', 'success');
-      const redirectUrl = (function() {
-        try { return sessionStorage.getItem(`redirectProduct_${productId}`); } catch (e) { return null; }
-      })();
-      const handle = getProductHandle(productId);
-      const fallback = handle ? `/products/${handle}` : '/cart';
-      window.location.href = (redirectUrl || fallback) + '?questionnaire_completed=true&action=proceed_to_checkout';
     };
 
     const interval = setInterval(() => {
@@ -740,6 +814,15 @@
       // Store product and customer info
       window.currentProductId = urlParams.get('product');
       window.customerId = urlParams.get('customer');
+      
+      // Clear any stale completion flags when starting a new quiz attempt
+      // This ensures the quiz must be completed fresh each time
+      const productId = urlParams.get('product');
+      if (productId) {
+        try {
+          sessionStorage.removeItem(`questionnaire_completed_${productId}`);
+        } catch (e) {}
+      }
       
       // Initialize RevenueHunt quiz
       if (quizId && !quizId.includes('_QUIZ_ID')) {
