@@ -19,7 +19,7 @@
 {%- assign QUIZ_WEIGHT_MANAGEMENT = 'FAO9CM' -%}
 {%- assign QUIZ_MENOPAUSE_HRT = 'S7thaH' -%}
 {%- assign QUIZ_HAIR_LOSS = 'UBhavI' -%}
-{%- assign QUIZ_DEFAULT = '0k34tS' -%} {%- comment -%} Fallback/default quiz ID {%- endcomment -%}
+{%- assign QUIZ_DEFAULT = QUIZ_GENERAL_HEALTH -%} {%- comment -%} Fallback/default quiz ID {%- endcomment -%}
 
 {%- comment -%}
   Function to get quiz ID based on product
@@ -27,7 +27,7 @@
   Returns: quizId variable
 {%- endcomment -%}
 
-{%- assign quizId = product.metafields.sxrx.quiz_id -%}
+{%- assign quizId = product.metafields.sxrx.quiz_id.value | default: product.metafields.sxrx.quiz_id -%}
 {%- assign tags_str = product.tags | join: ',' | downcase -%}
 
 {%- if quizId == blank -%}
