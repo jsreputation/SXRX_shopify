@@ -4,7 +4,7 @@
     <p class="sxrx-subtext">{{ section.settings.subtext }}</p>
 
     {% if section.settings.logo %}
-      <img src="{{ section.settings.logo | image_url }}" class="sxrx-logo" alt="Hero Logo">
+      <img src="{{ section.settings.logo | image_url }}" class="sxrx-logo" width="{{ section.settings.logo.width | default: 400 }}" height="{{ section.settings.logo.height | default: 200 }}" alt="Hero Logo">
     {% endif %}
 
     <p class="sxrx-smalltext">{{ section.settings.smalltext }}</p>

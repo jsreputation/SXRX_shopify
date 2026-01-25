@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+/* Product CSS - Migrated to use design system tokens where applicable */
+/* Migration Date: January 2026 */
+/* Theme-specific variables preserved where needed */
+
 
 .product-popup-modal, .variations input[type="radio"] + label:before, .variations .product-form__input--color input[type="radio"] + label, .variations .product-form__input--color input[type="radio"] + label:after, .variations .product-form__input--siblings label, .variations .product-form__input--siblings label:after, .variations .product-form__input--siblings label:before, .product-gallery-container .product-thumbnail-container .product-thumbnail:after, .thb-product-detail .product-single__media-zoom, .thb-product-detail .product-single__media-zoom svg, .thb-product-detail .product-single__media-xr-close, .thb-product-detail .product-single__media.product-single__media-model .product-single__media-model-button svg, .accordion summary span svg, .clipboard--bubble, .product-add-to-cart-sticky, .product-card-small--add-to-cart .price, .product-card-small--add-to-cart-button {
   transition: all 0.25s cubic-bezier(0.104, 0.204, 0.492, 1); }
@@ -69,7 +73,7 @@
 
 .add_to_cart_holder {
   display: grid;
-  gap: 12px;
+  gap: var(--spacing-md, 12px);
   align-items: start; }
   @media only screen and (min-width: 768px) {
     .add_to_cart_holder--multi {
@@ -83,17 +87,18 @@
   .shopify-payment-button__button:not(.shopify-payment-button__button--branded) {
     display: inline-flex;
     cursor: pointer;
-    padding: 7px 30px;
+    padding: var(--spacing-sm, 7px) var(--spacing-2xl, 30px);
     align-items: center;
     justify-content: center;
+    min-height: var(--min-touch-target, 50px);
     height: 50px;
-    font-size: 0.9375rem;
-    font-weight: var(--font-body-medium-weight, 500);
-    letter-spacing: var(--button-letter-spacing, 0.02em);
-    background: var(--solid-button-background, var(--color-accent));
-    color: var(--solid-button-label, #fff);
+    font-size: var(--font-size-sm, 0.9375rem);
+    font-weight: var(--font-body-medium-weight, var(--font-weight-medium, 500));
+    letter-spacing: var(--button-letter-spacing, var(--letter-spacing-wide, 0.02em));
+    background: var(--solid-button-background, var(--color-accent, var(--color-primary))); /* Uses design system color */
+    color: var(--solid-button-label, var(--color-text-inverse, #fff)); /* Uses design system color */
     border: 0;
-    border-radius: var(--button-border-radius, 6px);
+    border-radius: var(--button-border-radius, var(--radius-md, 6px)); /* Uses design system radius */
     text-align: center;
     position: relative;
     z-index: 1;
@@ -103,23 +108,23 @@
       text-transform: uppercase; }
     @media screen and (hover: hover) {
       .shopify-payment-button__button:not(.shopify-payment-button__button--branded):not([disabled]):hover, .shopify-payment-button__button:not(.shopify-payment-button__button--branded):not([disabled]):focus {
-        background: var(--solid-button-background-hover, var(--color-accent));
-        color: var(--solid-button-label, #fff); } }
+        background: var(--solid-button-background-hover, var(--color-accent, var(--color-primary-dark)));
+        color: var(--solid-button-label, var(--color-text-inverse, #fff)); } }
   .shopify-payment-button__button.shopify-payment-button__button--branded .shopify-cleanslate div[role="button"] {
     display: inline-flex;
     cursor: pointer;
-    padding: 7px 30px;
+    padding: var(--spacing-sm, 7px) var(--spacing-2xl, 30px);
     align-items: center;
     justify-content: center;
+    min-height: var(--min-touch-target, 50px) !important;
     height: 50px;
-    min-height: 50px !important;
-    font-size: 0.9375rem !important;
-    font-weight: var(--font-body-medium-weight, 500);
-    letter-spacing: var(--button-letter-spacing, 0.02em);
-    background: var(--solid-button-background, var(--color-accent));
-    color: var(--solid-button-label, #fff);
+    font-size: var(--font-size-sm, 0.9375rem) !important;
+    font-weight: var(--font-body-medium-weight, var(--font-weight-medium, 500));
+    letter-spacing: var(--button-letter-spacing, var(--letter-spacing-wide, 0.02em));
+    background: var(--solid-button-background, var(--color-accent, var(--color-primary)));
+    color: var(--solid-button-label, var(--color-text-inverse, #fff));
     border: 0;
-    border-radius: var(--button-border-radius, 6px);
+    border-radius: var(--button-border-radius, var(--radius-md, 6px));
     text-align: center;
     position: relative;
     z-index: 1;
@@ -130,9 +135,9 @@
   .shopify-payment-button__button--hidden {
     display: none; }
   .shopify-payment-button .shopify-payment-button__more-options {
-    margin: 8px auto 0;
+    margin: var(--spacing-sm, 8px) auto 0;
     width: auto;
-    font-size: 0.75rem; }
+    font-size: var(--font-size-xs, 0.75rem); }
 
 
 .product-form__input {
@@ -140,7 +145,7 @@
   border: 0; }
 
 .product-information--line-item {
-  margin-bottom: 20px; }
+  margin-bottom: var(--spacing-xl, 20px); }
   .product-information--line-item--textarea {
     min-height: 0; }
   .product-information--line-item input[type="text"],
@@ -149,16 +154,16 @@
     width: 100%; }
   .product-information--line-item input[type="text"]::placeholder,
   .product-information--line-item textarea::placeholder {
-    color: rgba(var(--color-body-rgb), 0.6); }
+    color: rgba(var(--color-body-rgb), 0.6); } /* Uses theme color with opacity - acceptable */
   .product-information--line-item .label {
     display: block;
-    margin-bottom: 5px; }
+    margin-bottom: var(--spacing-sm, 5px); }
 
 .variations {
-  margin-bottom: 10px; }
+  margin-bottom: var(--spacing-md, 10px); }
   .variations .product-form__input {
     padding: 0;
-    margin: 0 0 20px;
+    margin: 0 0 var(--spacing-xl, 20px); /* Uses design system spacing */
     border: 0; }
   .variations input[type="radio"] {
     clip: rect(0, 0, 0, 0);
@@ -173,7 +178,7 @@
         width: 100%;
         height: 100%;
         top: 0;
-        background: linear-gradient(to bottom right, transparent, transparent 48%, var(--color-border, #dadce0) 49%, var(--color-border, #dadce0) 50%, var(--color-border, #dadce0) 51%, transparent 52%, transparent) no-repeat;
+        background: linear-gradient(to bottom right, transparent, transparent 48%, var(--color-border, #dadce0) 49%, var(--color-border, #dadce0) 50%, var(--color-border, #dadce0) 51%, transparent 52%, transparent) no-repeat; /* Uses design system border color */
         z-index: 1; }
     .variations input[type="radio"].is-disabled + label:before {
       content: ""; }
@@ -194,31 +199,34 @@
       margin-bottom: 14px; }
       .variations .product-form__input--block input[type="radio"] + label {
         width: auto;
-        min-width: 42px;
+        min-width: var(--min-touch-target, 42px); /* Uses design system touch target */
+        min-height: var(--min-touch-target, 42px);
         height: 42px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: var(--input-border-radius, 6px);
-        padding: 5px 15px;
-        margin: 0 6px 6px 0;
-        font-size: 0.8125rem;
+        border-radius: var(--input-border-radius, var(--radius-md, 6px));
+        padding: var(--spacing-sm, 5px) var(--spacing-lg, 15px);
+        margin: 0 var(--spacing-sm, 6px) var(--spacing-sm, 6px) 0;
+        font-size: var(--font-size-xs, 0.8125rem);
         cursor: pointer;
         overflow: hidden; }
         [dir="rtl"] .variations .product-form__input--block input[type="radio"] + label {
-          margin: 0 0 6px 6px; }
+          margin: 0 0 var(--spacing-sm, 6px) var(--spacing-sm, 6px); } /* Uses design system spacing */
       .variations .product-form__input--block input[type="radio"] + label {
-        box-shadow: 0 0 0 1px var(--color-form-border) inset; }
+        box-shadow: 0 0 0 1px var(--color-form-border, var(--color-border)) inset; } /* Uses design system border color */
       .variations .product-form__input--block input[type="radio"]:checked + label {
         z-index: 5;
-        box-shadow: 0 0 0 1px var(--color-body, #2c2d2e) inset; }
+        box-shadow: 0 0 0 1px var(--color-body, var(--color-text, #2c2d2e)) inset; } /* Uses design system text color */
       .variations .product-form__input--block input[type="radio"]:focus-visible + label {
-        box-shadow: 0 0 0 2px #015ecc; }
+        box-shadow: var(--focus-ring, 0 0 0 2px var(--color-primary, #015ecc)); } /* Uses design system focus ring */
     .variations .product-form__input--color {
       display: flex;
       flex-wrap: wrap; }
       .variations .product-form__input--color input[type="radio"] + label {
-        width: 32px;
+        width: 32px; /* Note: Below minimum touch target - consider increasing for accessibility */
+        min-width: var(--min-touch-target, 32px);
+        min-height: var(--min-touch-target, 32px);
         height: 32px;
         display: inline-flex;
         text-indent: -9999em;
@@ -226,8 +234,8 @@
         color: transparent;
         cursor: pointer;
         z-index: 4;
-        border-radius: 50%;
-        margin: 1px 9px 1px 1px; }
+        border-radius: var(--radius-full, 50%); /* Uses design system radius */
+        margin: var(--spacing-xs, 1px) var(--spacing-sm, 9px) var(--spacing-xs, 1px) var(--spacing-xs, 1px); } /* Uses design system spacing */
         [dir="rtl"] .variations .product-form__input--color input[type="radio"] + label {
           margin: 1px 1px 1px 9px; }
         .variations .product-form__input--color input[type="radio"] + label:before {
@@ -243,45 +251,51 @@
           right: 0;
           bottom: 0;
           z-index: 1;
-          border-radius: 50%;
+          border-radius: var(--radius-full, 50%); /* Uses design system radius */
           background-size: cover;
           background-color: var(--option-color);
           background-image: var(--option-color-image); }
       .variations .product-form__input--color input[type="radio"]:checked + label {
-        box-shadow: 0 0 0 1px var(--color-body, #2c2d2e); }
+        box-shadow: 0 0 0 1px var(--color-body, var(--color-text, #2c2d2e)); } /* Uses design system text color */
         .variations .product-form__input--color input[type="radio"]:checked + label:after {
-          top: 3px;
-          left: 3px;
-          right: 3px;
-          bottom: 3px; }
+          top: var(--spacing-xs, 3px); /* Uses design system spacing */
+          left: var(--spacing-xs, 3px);
+          right: var(--spacing-xs, 3px);
+          bottom: var(--spacing-xs, 3px); }
       .variations .product-form__input--color input[type="radio"]:hover + label {
-        box-shadow: 0 0 0 1px var(--color-form-border); }
+        box-shadow: 0 0 0 1px var(--color-form-border, var(--color-border)); } /* Uses design system border color */
         .variations .product-form__input--color input[type="radio"]:hover + label:after {
-          top: 3px;
-          left: 3px;
-          right: 3px;
-          bottom: 3px; }
+          top: var(--spacing-xs, 3px); /* Uses design system spacing */
+          left: var(--spacing-xs, 3px);
+          right: var(--spacing-xs, 3px);
+          bottom: var(--spacing-xs, 3px); }
       .variations .product-form__input--color input[type="radio"]:checked:hover + label {
-        box-shadow: 0 0 0 1px var(--color-body, #2c2d2e); }
+        box-shadow: 0 0 0 1px var(--color-body, var(--color-text, #2c2d2e)); } /* Uses design system text color */
         .variations .product-form__input--color input[type="radio"]:checked:hover + label:after {
-          top: 4px;
-          left: 4px;
-          right: 4px;
-          bottom: 4px; }
+          top: var(--spacing-xs, 4px); /* Uses design system spacing */
+          left: var(--spacing-xs, 4px);
+          right: var(--spacing-xs, 4px);
+          bottom: var(--spacing-xs, 4px); }
       .variations .product-form__input--color input[type="radio"]:focus-visible + label:before {
-        box-shadow: 0 0 0 2px #015ecc inset; }
+        box-shadow: var(--focus-ring, 0 0 0 2px var(--color-primary, #015ecc)) inset; }
       .variations .product-form__input--color--large input[type="radio"] + label {
-        width: 48px;
+        width: var(--min-touch-target, 48px); /* Uses design system touch target */
+        min-width: var(--min-touch-target, 48px);
+        min-height: var(--min-touch-target, 48px);
         height: 48px; }
       .variations .product-form__input--color--xlarge input[type="radio"] + label {
-        width: 64px;
+        width: 64px; /* Larger than minimum touch target - acceptable */
+        min-width: var(--min-touch-target, 64px);
+        min-height: var(--min-touch-target, 64px);
         height: 64px; }
   .variations .product-form__input--siblings {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: var(--siblings-margin, 20px); }
     .variations .product-form__input--siblings label {
-      width: 32px;
+      width: 32px; /* Note: Below minimum touch target - consider increasing for accessibility */
+      min-width: var(--min-touch-target, 32px);
+      min-height: var(--min-touch-target, 32px);
       height: 32px;
       display: inline-flex;
       text-indent: -9999em;
@@ -289,8 +303,8 @@
       color: transparent;
       cursor: pointer;
       z-index: 4;
-      border-radius: 50%;
-      margin: 1px 9px 1px 1px; }
+      border-radius: var(--radius-full, 50%); /* Uses design system radius */
+      margin: var(--spacing-xs, 1px) var(--spacing-sm, 9px) var(--spacing-xs, 1px) var(--spacing-xs, 1px); } /* Uses design system spacing */
       .variations .product-form__input--siblings label:after {
         content: "";
         display: block;
@@ -299,7 +313,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        border-radius: 50%;
+        border-radius: var(--radius-full, 50%); /* Uses design system radius */
         background-position: center;
         background-size: cover;
         background-color: var(--option-color);
@@ -309,9 +323,9 @@
         width: 100%;
         height: 100%;
         top: 0;
-        background: linear-gradient(to bottom right, transparent, transparent 48%, var(--color-border, #dadce0) 49%, var(--color-border, #dadce0) 50%, var(--color-border, #dadce0) 51%, transparent 52%, transparent) no-repeat;
+        background: linear-gradient(to bottom right, transparent, transparent 48%, var(--color-border, #dadce0) 49%, var(--color-border, #dadce0) 50%, var(--color-border, #dadce0) 51%, transparent 52%, transparent) no-repeat; /* Uses design system border color */
         z-index: 1;
-        border-radius: 50%; }
+        border-radius: var(--radius-full, 50%); } /* Uses design system radius */
       .variations .product-form__input--siblings label a {
         display: block;
         position: absolute;
@@ -319,35 +333,39 @@
         z-index: 40; }
       .variations .product-form__input--siblings label.active {
         z-index: 5;
-        box-shadow: 0 0 0 1px var(--color-body, #2c2d2e); }
+        box-shadow: 0 0 0 1px var(--color-body, var(--color-text, #2c2d2e)); } /* Uses design system text color */
         .variations .product-form__input--siblings label.active:after {
-          top: 3px;
-          left: 3px;
-          right: 3px;
-          bottom: 3px; }
+          top: var(--spacing-xs, 3px); /* Uses design system spacing */
+          left: var(--spacing-xs, 3px);
+          right: var(--spacing-xs, 3px);
+          bottom: var(--spacing-xs, 3px); }
       .variations .product-form__input--siblings label.sold-out:before {
         content: ''; }
       .variations .product-form__input--siblings label.sold-out:after {
         opacity: 0.4; }
     .variations .product-form__input--siblings--large label {
-      width: 48px;
+      width: var(--min-touch-target, 48px); /* Uses design system touch target */
+      min-width: var(--min-touch-target, 48px);
+      min-height: var(--min-touch-target, 48px);
       height: 48px; }
     .variations .product-form__input--siblings--xlarge label {
-      width: 64px;
+      width: 64px; /* Larger than minimum touch target - acceptable */
+      min-width: var(--min-touch-target, 64px);
+      min-height: var(--min-touch-target, 64px);
       height: 64px; }
 
 .form__label {
   display: flex;
   width: 100%;
   align-items: center;
-  font-weight: var(--font-body-medium-weight, 500);
-  font-size: 0.8125rem;
-  margin-bottom: 9px; }
+  font-weight: var(--font-body-medium-weight, var(--font-weight-medium, 500));
+  font-size: var(--font-size-xs, 0.8125rem);
+  margin-bottom: var(--spacing-sm, 9px); }
   .form__label__value {
-    font-weight: 400;
+    font-weight: var(--font-weight-normal, 400);
     text-transform: none;
-    margin-right: 20px;
-    padding-left: 2px; }
+    margin-right: var(--spacing-xl, 20px);
+    padding-left: var(--spacing-xs, 2px); }
   .form__label .product-popup-modal__opener {
     display: inline-flex;
     margin-left: auto; }

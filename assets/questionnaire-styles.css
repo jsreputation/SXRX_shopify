@@ -1,34 +1,37 @@
-/* Questionnaire Integration Styles - Modern Design */
+/* Questionnaire Integration Styles - Modern Design
+ * Uses design system tokens where possible, with questionnaire-specific overrides
+ */
 
 :root {
-  --questionnaire-primary: #2563eb;
-  --questionnaire-primary-hover: #1d4ed8;
-  --questionnaire-success: #10b981;
-  --questionnaire-success-bg: #d1fae5;
-  --questionnaire-success-border: #6ee7b7;
-  --questionnaire-warning: #f59e0b;
-  --questionnaire-warning-bg: #fef3c7;
-  --questionnaire-warning-border: #fcd34d;
-  --questionnaire-error: #ef4444;
-  --questionnaire-error-bg: #fee2e2;
-  --questionnaire-error-border: #fca5a5;
-  --questionnaire-text: #1f2937;
-  --questionnaire-text-light: #6b7280;
-  --questionnaire-bg: #ffffff;
-  --questionnaire-bg-light: #f9fafb;
-  --questionnaire-border: #e5e7eb;
-  --questionnaire-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --questionnaire-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --questionnaire-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --questionnaire-radius: 12px;
-  --questionnaire-radius-sm: 8px;
-  --questionnaire-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Use design system tokens as base */
+  --questionnaire-primary: var(--color-primary, #2563eb);
+  --questionnaire-primary-hover: var(--color-primary-dark, #1d4ed8);
+  --questionnaire-success: var(--color-success, #10b981);
+  --questionnaire-success-bg: var(--color-success-bg, #d1fae5);
+  --questionnaire-success-border: var(--color-success-border, #6ee7b7);
+  --questionnaire-warning: var(--color-warning, #f59e0b);
+  --questionnaire-warning-bg: var(--color-warning-bg, #fef3c7);
+  --questionnaire-warning-border: var(--color-warning-border, #fcd34d);
+  --questionnaire-error: var(--color-error, #ef4444);
+  --questionnaire-error-bg: var(--color-error-bg, #fee2e2);
+  --questionnaire-error-border: var(--color-error-border, #fca5a5);
+  --questionnaire-text: var(--color-text, #1f2937);
+  --questionnaire-text-light: var(--color-text-light, #6b7280);
+  --questionnaire-bg: var(--color-bg, #ffffff);
+  --questionnaire-bg-light: var(--color-bg-light, #f9fafb);
+  --questionnaire-border: var(--color-border, #e5e7eb);
+  --questionnaire-shadow: var(--shadow-sm, 0 1px 3px 0 rgba(0, 0, 0, 0.1));
+  --questionnaire-shadow-md: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+  --questionnaire-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
+  --questionnaire-radius: var(--radius-lg, 12px);
+  --questionnaire-radius-sm: var(--radius-md, 8px);
+  --questionnaire-transition: var(--transition-base, all 0.3s cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 /* Questionnaire Status */
 .questionnaire-status {
-  padding: 1.25rem 1.5rem;
-  margin: 1.5rem 0;
+  padding: var(--spacing-md, 1.25rem) var(--spacing-lg, 1.5rem);
+  margin: var(--spacing-lg, 1.5rem) 0;
   border-radius: var(--questionnaire-radius-sm);
   background: linear-gradient(135deg, var(--questionnaire-bg-light) 0%, var(--questionnaire-bg) 100%);
   border: 1px solid var(--questionnaire-border);
@@ -38,27 +41,28 @@
 
 .questionnaire-status .questionnaire-message {
   margin: 0;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium, 500);
   color: var(--questionnaire-text);
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: var(--font-size-sm, 0.95rem);
+  line-height: var(--line-height-normal, 1.6);
 }
 
 /* Button Wrapper */
 .questionnaire-button-wrapper {
-  margin: 1.5rem 0;
+  margin: var(--spacing-lg, 1.5rem) 0;
 }
 
 .questionnaire-btn {
   width: 100%;
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: var(--spacing-md, 1rem) var(--spacing-xl, 2rem);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
   text-transform: none;
-  letter-spacing: 0.025em;
+  letter-spacing: var(--letter-spacing-wide, 0.025em);
   border-radius: var(--questionnaire-radius-sm);
   transition: var(--questionnaire-transition);
   box-shadow: var(--questionnaire-shadow);
+  min-height: var(--min-touch-target, 44px); /* Accessibility */
 }
 
 .questionnaire-btn:hover {
@@ -68,26 +72,26 @@
 
 /* Purchase Type Selector */
 .purchase-type-selector {
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: var(--spacing-lg, 1.5rem);
+  background: linear-gradient(135deg, var(--color-bg-light, #f8fafc) 0%, var(--color-bg-lighter, #f1f5f9) 100%);
   border-radius: var(--questionnaire-radius);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg, 1.5rem);
   border: 1px solid var(--questionnaire-border);
   box-shadow: var(--questionnaire-shadow);
 }
 
 .purchase-type-label {
-  font-weight: 600;
-  margin-bottom: 1rem;
+  font-weight: var(--font-weight-semibold, 600);
+  margin-bottom: var(--spacing-md, 1rem);
   display: block;
   color: var(--questionnaire-text);
-  font-size: 1rem;
-  letter-spacing: -0.01em;
+  font-size: var(--font-size-base, 1rem);
+  letter-spacing: var(--letter-spacing-tight, -0.01em);
 }
 
 .purchase-type-options {
   display: flex;
-  gap: 2rem;
+  gap: var(--spacing-xl, 2rem);
   flex-wrap: wrap;
 }
 
@@ -95,14 +99,15 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium, 500);
   color: var(--questionnaire-text);
-  padding: 0.75rem 1.25rem;
+  padding: var(--spacing-md, 0.75rem) var(--spacing-lg, 1.25rem);
   background: var(--questionnaire-bg);
   border: 2px solid var(--questionnaire-border);
   border-radius: var(--questionnaire-radius-sm);
   transition: var(--questionnaire-transition);
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm, 0.95rem);
+  min-height: var(--min-touch-target, 44px); /* Accessibility */
 }
 
 .purchase-type-options label:hover {
@@ -119,10 +124,12 @@
 }
 
 .purchase-type-options input[type="radio"] {
-  margin-right: 0.75rem;
+  margin-right: var(--spacing-md, 0.75rem);
   cursor: pointer;
   width: 18px;
   height: 18px;
+  min-width: 18px; /* Ensure minimum size */
+  min-height: 18px;
   accent-color: var(--questionnaire-primary);
 }
 
@@ -136,18 +143,19 @@
 /* Purchase Button */
 .purchase-button {
   width: 100%;
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: var(--spacing-md, 1rem) var(--spacing-xl, 2rem);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
   text-transform: none;
-  letter-spacing: 0.025em;
+  letter-spacing: var(--letter-spacing-wide, 0.025em);
   border-radius: var(--questionnaire-radius-sm);
   background: linear-gradient(135deg, var(--questionnaire-primary) 0%, var(--questionnaire-primary-hover) 100%);
-  color: white;
+  color: var(--color-text-inverse, white);
   border: none;
   transition: var(--questionnaire-transition);
   box-shadow: var(--questionnaire-shadow-md);
   cursor: pointer;
+  min-height: var(--min-touch-target, 44px); /* Accessibility */
 }
 
 .purchase-button:hover:not(:disabled) {
@@ -163,12 +171,12 @@
 
 /* Consultation Prompt */
 .consultation-prompt {
-  padding: 2.5rem;
+  padding: var(--spacing-2xl, 2.5rem);
   text-align: center;
   background: linear-gradient(135deg, var(--questionnaire-warning-bg) 0%, #fef9e7 100%);
   border: 2px solid var(--questionnaire-warning-border);
   border-radius: var(--questionnaire-radius);
-  margin: 2rem 0;
+  margin: var(--spacing-xl, 2rem) 0;
   box-shadow: var(--questionnaire-shadow-md);
   position: relative;
   overflow: hidden;
@@ -185,99 +193,309 @@
 }
 
 .consultation-prompt h3 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--spacing-md, 1rem) 0;
   color: #92400e;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--font-size-2xl, 1.5rem);
+  font-weight: var(--font-weight-bold, 700);
+  letter-spacing: var(--letter-spacing-tight, -0.02em);
 }
 
 .consultation-prompt p {
   color: #78350f;
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
-  line-height: 1.7;
+  margin-bottom: var(--spacing-lg, 1.5rem);
+  font-size: var(--font-size-base, 1rem);
+  line-height: var(--line-height-relaxed, 1.7);
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.consultation-prompt .available-slots {
-  margin: 1.5rem 0;
-  text-align: left;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 1.25rem;
-  border-radius: var(--questionnaire-radius-sm);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+/* Beautiful Appointment Scheduler UI */
+.consultation-prompt .consultation-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl, 2rem);
 }
 
-.consultation-prompt .available-slots strong {
+.consultation-prompt .consultation-icon {
+  font-size: var(--font-size-4xl, 3rem);
+  margin-bottom: var(--spacing-md, 1rem);
   display: block;
-  margin-bottom: 0.75rem;
-  color: #92400e;
-  font-size: 0.95rem;
-  font-weight: 600;
 }
 
-.consultation-prompt .available-slots ul {
-  list-style: none;
-  padding: 0;
+.consultation-prompt .consultation-description {
+  color: var(--color-text-light, #6b7280);
+  font-size: var(--font-size-sm, 0.95rem);
+  margin-top: var(--spacing-md, 0.75rem);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.appointment-scheduler {
+  margin: var(--spacing-xl, 2rem) 0;
+}
+
+.scheduler-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg, 1.5rem);
+}
+
+.scheduler-header h4 {
+  font-size: var(--font-size-xl, 1.25rem);
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--color-text, #1f2937);
+  margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.scheduler-subtitle {
+  color: var(--color-text-light, #6b7280);
+  font-size: var(--font-size-sm, 0.9rem);
   margin: 0;
 }
 
-.consultation-prompt .available-slots li {
-  padding: 0.5rem 0;
-  color: #78350f;
-  font-size: 0.9rem;
-  border-bottom: 1px solid rgba(245, 158, 11, 0.1);
-  padding-left: 1.5rem;
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--spacing-md, 1rem);
+  margin: var(--spacing-lg, 1.5rem) 0;
+}
+
+.slot-card {
   position: relative;
+  border: 2px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-bg, white);
+  cursor: pointer;
+  transition: var(--transition-base, all 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+  overflow: hidden;
+  min-height: var(--min-touch-target, 44px); /* Accessibility */
 }
 
-.consultation-prompt .available-slots li:last-child {
-  border-bottom: none;
+.slot-card:hover {
+  border-color: var(--color-primary-light, #3b82f6);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(59, 130, 246, 0.15));
 }
 
-.consultation-prompt .available-slots li::before {
-  content: '📅';
+.slot-card.selected {
+  border-color: var(--color-primary-light, #3b82f6);
+  background: linear-gradient(135deg, var(--color-primary-lightest, #eff6ff) 0%, var(--color-primary-lightest, #dbeafe) 100%);
+  box-shadow: var(--shadow-lg, 0 4px 16px rgba(59, 130, 246, 0.25));
+}
+
+.slot-radio {
   position: absolute;
-  left: 0;
-  top: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slot-label {
+  display: block;
+  padding: var(--spacing-md, 1.25rem);
+  cursor: pointer;
+  text-align: center;
+  min-height: var(--min-touch-target, 44px); /* Accessibility */
+}
+
+.slot-date {
+  margin-bottom: var(--spacing-md, 0.75rem);
+}
+
+.slot-day {
+  display: block;
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-light, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-xs, 0.25rem);
+}
+
+.slot-month-day {
+  display: block;
+  font-size: var(--font-size-lg, 1.1rem);
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--color-text, #1f2937);
+}
+
+.slot-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 0.5rem);
+  margin: var(--spacing-md, 0.75rem) 0;
+  font-size: var(--font-size-sm, 0.95rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text, #1f2937);
+}
+
+.time-separator {
+  color: var(--color-text-muted, #9ca3af);
+  font-weight: var(--font-weight-normal, 400);
+}
+
+.slot-provider {
+  font-size: var(--font-size-xs, 0.8rem);
+  color: var(--color-text-light, #6b7280);
+  margin-top: var(--spacing-sm, 0.5rem);
+  padding-top: var(--spacing-sm, 0.5rem);
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.slot-card.selected .slot-provider {
+  border-top-color: var(--color-primary-lighter, #93c5fd);
+  color: var(--color-primary-light, #3b82f6);
+}
+
+.selected-slot-info {
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.selected-slot-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #065f46;
+  font-weight: 600;
+}
+
+.selected-icon {
+  font-size: 1.25rem;
+  color: #10b981;
+}
+
+.no-slots-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 16px;
+  margin: 2rem 0;
+}
+
+.no-slots-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.no-slots-message h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 0.75rem;
+}
+
+.no-slots-message p {
+  color: #78350f;
+  margin-bottom: 1.5rem;
+}
+
+.contact-link {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #f59e0b;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.contact-link:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3);
+}
+
+.booking-actions {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.btn-booking {
+  position: relative;
+  min-width: 220px;
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.btn-loader {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+#schedule-consultation-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+@media (max-width: 768px) {
+  .slots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--spacing-md, 0.75rem);
+  }
+  
+  .slot-label {
+    padding: var(--spacing-md, 1rem);
+    min-height: var(--min-touch-target, 44px); /* Accessibility */
+  }
+  
+  .slot-month-day {
+    font-size: var(--font-size-base, 1rem);
+  }
+  
+  .slot-time {
+    font-size: var(--font-size-sm, 0.85rem);
+  }
 }
 
 #schedule-consultation-btn {
-  margin-top: 1.5rem;
-  padding: 1rem 2.5rem;
+  margin-top: var(--spacing-lg, 1.5rem);
+  padding: var(--spacing-md, 1rem) var(--spacing-xl, 2.5rem);
   background: linear-gradient(135deg, var(--questionnaire-primary) 0%, var(--questionnaire-primary-hover) 100%);
-  color: white;
+  color: var(--color-text-inverse, white);
   border: none;
   border-radius: var(--questionnaire-radius-sm);
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
   transition: var(--questionnaire-transition);
   box-shadow: var(--questionnaire-shadow-md);
   text-transform: none;
-  letter-spacing: 0.025em;
+  letter-spacing: var(--letter-spacing-wide, 0.025em);
+  min-height: var(--min-touch-target, 44px); /* Accessibility */
 }
 
-#schedule-consultation-btn:hover {
+#schedule-consultation-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: var(--questionnaire-shadow-lg);
   background: linear-gradient(135deg, var(--questionnaire-primary-hover) 0%, #1e40af 100%);
 }
 
-#schedule-consultation-btn:active {
+#schedule-consultation-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 
 /* Messages */
 .message {
-  padding: 1.25rem 1.5rem;
+  padding: var(--spacing-md, 1.25rem) var(--spacing-lg, 1.5rem);
   border-radius: var(--questionnaire-radius-sm);
-  margin: 1.5rem 0;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  margin: var(--spacing-lg, 1.5rem) 0;
+  font-size: var(--font-size-sm, 0.95rem);
+  line-height: var(--line-height-normal, 1.6);
   box-shadow: var(--questionnaire-shadow);
   border-left: 4px solid;
 }

@@ -70,7 +70,7 @@
 	</div>
 </div>
 {%- if googlemaps_api_key != blank -%}
-	<script src='https://maps.google.com/maps/api/js?key={{ section.settings.googlemaps_api_key | escape }}'></script>
+	<script src="https://maps.google.com/maps/api/js?key={{ section.settings.googlemaps_api_key | escape }}" defer></script>
 {%- endif -%}
 {{ 'map.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'map.js' | asset_url }}" defer></script>

@@ -1,9 +1,10 @@
 {{ 'login-register.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'registration-handler.js' | asset_url }}" defer></script>
 <div class="row">
 	<div class="small-12 columns">
     <div class="thb-form-container">
       <div class="thb-register-form">
-        {% form 'create_customer', novalidate: 'novalidate' %}
+        {% form 'create_customer', id: 'customer-register-form', novalidate: 'novalidate' %}
 					<h4>{{ 'customer.login_page.create_account' | t }}</h4>
 					<p>{{ 'customer.login_page.create_account_description' | t }}</p>
 					{% if form.errors %}
@@ -11,25 +12,67 @@
 						{% render 'svg-icons' with 'thb-error' %} {{ form.errors | default_errors }}
 					</div>
 					{% endif %}
+					<div id="registration-error" class="form-notification error" style="display: none;">
+						{% render 'svg-icons' with 'thb-error' %} <span id="registration-error-message"></span>
+					</div>
 					<div class="fields">
             <div class="field">
-              <input type="text" name="customer[first_name]" class="full" value="{% if form.first_name %}{{ form.first_name }}{% endif %}" placeholder="{{ 'customer.login_page.first_name' | t }}" />
-	            <label for="first_name">{{ 'customer.login_page.first_name' | t }}</label>
+              <input type="text" name="customer[first_name]" id="register-first-name" class="full" value="{% if form.first_name %}{{ form.first_name }}{% endif %}" placeholder="{{ 'customer.login_page.first_name' | t }}" required />
+	            <label for="register-first-name">{{ 'customer.login_page.first_name' | t }} <span class="required">*</span></label>
             </div>
             <div class="field">
-              <input type="text" name="customer[last_name]" class="full" value="{% if form.last_name %}{{ form.last_name }}{% endif %}" placeholder="{{ 'customer.login_page.last_name' | t }}" />
-	            <label for="last_name">{{ 'customer.login_page.last_name' | t }}</label>
+              <input type="text" name="customer[last_name]" id="register-last-name" class="full" value="{% if form.last_name %}{{ form.last_name }}{% endif %}" placeholder="{{ 'customer.login_page.last_name' | t }}" required />
+	            <label for="register-last-name">{{ 'customer.login_page.last_name' | t }} <span class="required">*</span></label>
             </div>
 					</div>
           <div class="field">
-            <input type="email" name="customer[email]" class="full {% if form.errors contains 'email' %}invalid{% endif %}" value="" placeholder="{{ 'customer.login_page.email' | t }}" />
-            <label for="email">{{ 'customer.login_page.email' | t }}</label>
+            <input type="email" name="customer[email]" id="register-email" class="full {% if form.errors contains 'email' %}invalid{% endif %}" value="{% if form.email %}{{ form.email }}{% endif %}" placeholder="{{ 'customer.login_page.email' | t }}" required />
+            <label for="register-email">{{ 'customer.login_page.email' | t }} <span class="required">*</span></label>
           </div>
           <div class="field">
-            <input type="password" name="customer[password]" class="full" value="" placeholder="{{ 'customer.login_page.password' | t }}" />
-            <label for="password">{{ 'customer.login_page.password' | t }}</label>
+            <input type="tel" name="customer[phone]" id="register-phone" class="full" value="{% if form.phone %}{{ form.phone }}{% endif %}" placeholder="Phone number (e.g., +1 555-123-4567)" maxlength="20" />
+            <label for="register-phone">Phone Number</label>
+            <small style="display: block; margin-top: 4px; color: #666; font-size: 0.85rem;">Optional. Used for appointment booking and account verification.</small>
           </div>
-          <button type="submit" class="button full"><span>{{ 'customer.login_page.submit_register' | t }}</span></button>
+          <div class="field">
+            <input type="password" name="customer[password]" id="register-password" class="full" value="" placeholder="{{ 'customer.login_page.password' | t }}" required minlength="6" />
+            <label for="register-password">{{ 'customer.login_page.password' | t }} <span class="required">*</span></label>
+            <div id="password-requirements" class="password-requirements">
+              <small>Password must contain:</small>
+              <ul class="password-requirement-list">
+                <li id="req-length" class="requirement-item">
+                  <span class="requirement-icon">○</span>
+                  At least 6 characters
+                </li>
+                <li id="req-uppercase" class="requirement-item">
+                  <span class="requirement-icon">○</span>
+                  One uppercase letter
+                </li>
+                <li id="req-lowercase" class="requirement-item">
+                  <span class="requirement-icon">○</span>
+                  One lowercase letter
+                </li>
+                <li id="req-number" class="requirement-item">
+                  <span class="requirement-icon">○</span>
+                  One number
+                </li>
+              </ul>
+              <div id="password-strength" class="password-strength-indicator">
+                <div class="strength-bar">
+                  <div class="strength-fill" id="strength-fill"></div>
+                </div>
+                <span class="strength-text" id="strength-text">Password strength</span>
+              </div>
+            </div>
+          </div>
+          <div class="field" id="state-field" style="display: none;">
+            <input type="text" name="customer[note]" id="register-state" class="full" placeholder="State (e.g., CA, TX)" />
+            <label for="register-state">State</label>
+          </div>
+          <button type="submit" class="button full" id="register-submit-btn">
+            <span class="btn-text">{{ 'customer.login_page.submit_register' | t }}</span>
+            <span class="btn-loader" style="display: none;">⏳ Creating account...</span>
+          </button>
         {% endform %}
 				<div class="switch-login-section">
 					{{ 'customer.login_page.already_have_an_account' | t }} 
@@ -40,3 +83,255 @@
     </div>
   </div>
 </div>
+
+<style>
+  .required {
+    color: #dc2626;
+    font-weight: 600;
+  }
+  
+  .field input:required:invalid {
+    border-color: #dc2626;
+  }
+  
+  .field input:required:valid {
+    border-color: #10b981;
+  }
+  
+  #register-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .btn-loader {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Password Requirements Styles */
+  .password-requirements {
+    margin-top: 8px;
+    padding: 12px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  
+  .password-requirements small {
+    display: block;
+    color: #6b7280;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .password-requirement-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+  
+  .requirement-item {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+    color: #6b7280;
+    font-size: 12px;
+    transition: color 0.2s;
+  }
+  
+  .requirement-item.valid {
+    color: #10b981;
+  }
+  
+  .requirement-item.invalid {
+    color: #ef4444;
+  }
+  
+  .requirement-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    text-align: center;
+    line-height: 16px;
+    font-size: 10px;
+    transition: all 0.2s;
+  }
+  
+  .requirement-item.valid .requirement-icon::before {
+    content: '✓';
+    color: #10b981;
+    font-weight: bold;
+  }
+  
+  .requirement-item.invalid .requirement-icon::before {
+    content: '○';
+    color: #ef4444;
+  }
+  
+  .password-strength-indicator {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .strength-bar {
+    width: 100%;
+    height: 4px;
+    background-color: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  
+  .strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+  }
+  
+  .strength-fill.weak {
+    width: 33%;
+    background-color: #ef4444;
+  }
+  
+  .strength-fill.medium {
+    width: 66%;
+    background-color: #f59e0b;
+  }
+  
+  .strength-fill.strong {
+    width: 100%;
+    background-color: #10b981;
+  }
+  
+  .strength-text {
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+  
+  .strength-text.weak {
+    color: #ef4444;
+  }
+  
+  .strength-text.medium {
+    color: #f59e0b;
+  }
+  
+  .strength-text.strong {
+    color: #10b981;
+  }
+</style>
+
+<script>
+  // Password requirements validation and strength indicator
+  (function() {
+    const passwordInput = document.getElementById('register-password');
+    if (!passwordInput) return;
+    
+    function checkPasswordRequirements(password) {
+      const requirements = {
+        length: password.length >= 6,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password)
+      };
+      
+      // Update requirement indicators
+      updateRequirement('req-length', requirements.length);
+      updateRequirement('req-uppercase', requirements.uppercase);
+      updateRequirement('req-lowercase', requirements.lowercase);
+      updateRequirement('req-number', requirements.number);
+      
+      // Calculate strength
+      const strength = calculateStrength(requirements, password.length);
+      updateStrengthIndicator(strength);
+      
+      return Object.values(requirements).every(r => r);
+    }
+    
+    function updateRequirement(id, isValid) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.classList.remove('valid', 'invalid');
+        element.classList.add(isValid ? 'valid' : 'invalid');
+      }
+    }
+    
+    function calculateStrength(requirements, length) {
+      let score = 0;
+      if (requirements.length) score += 1;
+      if (requirements.uppercase) score += 1;
+      if (requirements.lowercase) score += 1;
+      if (requirements.number) score += 1;
+      if (length >= 8) score += 1;
+      if (length >= 12) score += 1;
+      
+      if (score <= 2) return 'weak';
+      if (score <= 4) return 'medium';
+      return 'strong';
+    }
+    
+    function updateStrengthIndicator(strength) {
+      const fill = document.getElementById('strength-fill');
+      const text = document.getElementById('strength-text');
+      
+      if (fill) {
+        fill.className = 'strength-fill ' + strength;
+      }
+      
+      if (text) {
+        text.className = 'strength-text ' + strength;
+        const strengthLabels = {
+          weak: 'Weak password',
+          medium: 'Medium strength',
+          strong: 'Strong password'
+        };
+        text.textContent = strengthLabels[strength] || 'Password strength';
+      }
+    }
+    
+    // Real-time validation
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      if (password.length > 0) {
+        checkPasswordRequirements(password);
+      } else {
+        // Reset indicators when empty
+        ['req-length', 'req-uppercase', 'req-lowercase', 'req-number'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.classList.remove('valid', 'invalid');
+          }
+        });
+        updateStrengthIndicator('weak');
+      }
+    });
+    
+    // Validate on form submit
+    const form = document.getElementById('customer-register-form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        const password = passwordInput.value;
+        if (!checkPasswordRequirements(password)) {
+          e.preventDefault();
+          const errorDiv = document.getElementById('registration-error');
+          const errorMessage = document.getElementById('registration-error-message');
+          if (errorDiv && errorMessage) {
+            errorMessage.textContent = 'Password does not meet all requirements. Please check the requirements below.';
+            errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          return false;
+        }
+      });
+    }
+  })();
+</script>

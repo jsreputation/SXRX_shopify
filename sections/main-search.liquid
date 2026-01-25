@@ -71,7 +71,7 @@
 	</div>
 	{%- if enable_filtering -%}
 	{{ 'facets.css' | asset_url | stylesheet_tag }}
-	{{ 'nouislider.js' | asset_url | script_tag }}
+	<script src="{{ 'nouislider.js' | asset_url }}" defer></script>
 	<script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
 	{%- endif -%}
 {%- endif -%}

@@ -7,8 +7,10 @@
       <div class="process-card">
         
         {% if block.settings.icon_image %}
-          <img class="process-icon" 
-               src="{{ block.settings.icon_image | img_url: '200x' }}" 
+          <img class="process-icon"
+               src="{{ block.settings.icon_image | image_url: width: 200 }}"
+               width="200"
+               height="{{ block.settings.icon_image.height | default: 200 }}"
                alt="">
         {% endif %}
 

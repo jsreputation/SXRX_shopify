@@ -726,6 +726,22 @@ if (!customElements.get('product-form')) {
       this.hideErrors = this.dataset.hideErrors === 'true';
     }
     onSubmitHandler(evt) {
+      // Allow Shopify dynamic checkout ("Buy now") buttons to submit normally.
+      // The theme AJAX add-to-cart flow should only handle standard Add to cart submits.
+      try {
+        const submitter = evt.submitter || document.activeElement;
+        const submitterName = submitter && submitter.getAttribute ? submitter.getAttribute('name') : null;
+        const isPaymentButton = !!(submitter && submitter.closest && submitter.closest('.shopify-payment-button'));
+        const isBuyNow =
+          submitterName === 'checkout' ||
+          submitterName === 'buy_now' ||
+          (submitter && submitter.classList && submitter.classList.contains('shopify-payment-button__button')) ||
+          isPaymentButton;
+        if (isBuyNow) {
+          return;
+        }
+      } catch (e) {}
+
       evt.preventDefault();
 
       if (!this.form.reportValidity()) {

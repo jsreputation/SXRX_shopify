@@ -57,7 +57,7 @@
 
   <div class="mh-image">
     {% if section.settings.background_image %}
-      <img src="{{ section.settings.background_image | img_url: '800x' }}" alt="">
+      <img src="{{ section.settings.background_image | image_url: width: 800 }}" width="800" height="{{ section.settings.background_image.height | default: 450 }}" alt="">
     {% endif %}
   </div>
 </section>

@@ -29,7 +29,7 @@
         {% render 'header-style5', blocks: section.blocks, header_settings: section.settings %}
     {%- endcase -%}
   </div>
-  {%- style -%}
+  {% style %}
     :root {
     	--logo-height: {{ logo_height_range | append: 'px' }};
     	--logo-height-mobile: {{ logo_height_range_mobile | append: 'px' }};
@@ -38,10 +38,10 @@
     .header-section {
     	position: static !important;
     }
-    {%- endunless -%}
-  {%- endstyle -%}
+    {% endunless %}
+  {% endstyle %}
 </theme-header>
-{{- 'header.js' | asset_url | script_tag -}}
+<script src="{{ 'header.js' | asset_url }}" defer></script>
 
 <script type="application/ld+json">
   {

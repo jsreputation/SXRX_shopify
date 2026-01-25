@@ -86,7 +86,7 @@
 
 {%- if enable_filtering or enable_sorting -%}
 {%- if enable_filtering  -%}
-{{ 'nouislider.js' | asset_url | script_tag }}
+<script src="{{ 'nouislider.js' | asset_url }}" defer></script>
 {%- endif -%}
 <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}

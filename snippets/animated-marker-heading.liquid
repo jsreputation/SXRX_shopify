@@ -1,7 +1,5 @@
 {%- capture marker -%}
 {%- render 'svg-markers' with style -%}|
 {%- endcapture -%}
-{%- capture span_start -%}
-<span class="animated-marker" style="--marker-color: {{ color | default: '#FD6262' }}">
-{%- endcapture -%}
+{%- assign span_start = '<span class="animated-marker" style="--marker-color: ' | append: (color | default: '#FD6262') | append: '">' -%}
 {{ heading | replace_first: '|', span_start | replace: '|', marker | replace: '|', '</span>' }}

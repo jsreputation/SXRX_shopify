@@ -1,0 +1,116 @@
+{{ 'customer.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'my-account-dashboard.js' | asset_url }}" defer></script>
+
+<div class="section-spacing-bottom">
+  <div class="row">
+    <div class="small-12 columns myaccount-content">
+      <h4>My Account</h4>
+      <p style="margin-bottom: 32px; color: #666;">Manage your account, appointments, orders, and health information.</p>
+      
+      <div id="account-dashboard-container">
+        <div id="account-loading" style="text-align: center; padding: 40px;">
+          <p>Loading account information...</p>
+        </div>
+        
+        <div id="account-dashboard" style="display: none;">
+          <!-- Account Info Card -->
+          <div class="account-card" style="background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h5 style="margin: 0; font-size: 1.2rem; font-weight: 600;">Account Information</h5>
+            </div>
+            <div id="account-info-display" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div class="account-card" style="background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <h5 style="margin: 0 0 20px 0; font-size: 1.2rem; font-weight: 600;">Quick Actions</h5>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <a href="/pages/book-appointment" class="quick-action-btn" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: #1a1c1d; transition: all 0.2s;">
+                <div style="width: 40px; height: 40px; background: #3f72e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">📅</div>
+                <div>
+                  <div style="font-weight: 600; margin-bottom: 4px;">Book Appointment</div>
+                  <div style="font-size: 0.85rem; color: #666;">Schedule a consultation</div>
+                </div>
+              </a>
+              
+              <a href="/pages/my-appointments" class="quick-action-btn" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: #1a1c1d; transition: all 0.2s;">
+                <div style="width: 40px; height: 40px; background: #10b981; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">📋</div>
+                <div>
+                  <div style="font-weight: 600; margin-bottom: 4px;">My Appointments</div>
+                  <div style="font-size: 0.85rem; color: #666;">View upcoming appointments</div>
+                </div>
+              </a>
+              
+              <a href="/pages/my-chart" class="quick-action-btn" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: #1a1c1d; transition: all 0.2s;">
+                <div style="width: 40px; height: 40px; background: #8b5cf6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">📊</div>
+                <div>
+                  <div style="font-weight: 600; margin-bottom: 4px;">My Chart</div>
+                  <div style="font-size: 0.85rem; color: #666;">View health records</div>
+                </div>
+              </a>
+              
+              <a href="/account/orders" class="quick-action-btn" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: #1a1c1d; transition: all 0.2s;">
+                <div style="width: 40px; height: 40px; background: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">🛒</div>
+                <div>
+                  <div style="font-weight: 600; margin-bottom: 4px;">My Orders</div>
+                  <div style="font-size: 0.85rem; color: #666;">View order history</div>
+                </div>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Recent Orders Preview -->
+          <div class="account-card" style="background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h5 style="margin: 0; font-size: 1.2rem; font-weight: 600;">Recent Orders</h5>
+              <a href="/account/orders" class="text-button" style="text-decoration: none; font-size: 0.9rem; color: #3f72e5;" data-no-instant>View All →</a>
+            </div>
+            <div id="recent-orders" style="min-height: 100px;">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+          
+          <!-- Account Actions -->
+          <div class="account-card" style="background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <h5 style="margin: 0 0 20px 0; font-size: 1.2rem; font-weight: 600;">Account Settings</h5>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <a href="/account/addresses" class="account-action-link" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: #1a1c1d;">
+                <span>Manage Addresses</span>
+                <span style="color: #666;">→</span>
+              </a>
+              <a href="/account/logout" class="account-action-link" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: #dc2626;" data-no-instant>
+                <span>Sign Out</span>
+                <span style="color: #666;">→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .quick-action-btn:hover {
+    background: #f3f4f6 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .account-action-link:hover {
+    background: #f3f4f6 !important;
+  }
+  
+  @media (max-width: 768px) {
+    .account-card {
+      padding: 16px !important;
+    }
+    
+    .quick-action-btn {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>

@@ -10,7 +10,7 @@
 	assign items_requiring_shipping = cart.items | where: 'requires_shipping'
 -%}
 {{- 'cart.css' | asset_url | stylesheet_tag -}}
-{{- 'cart.js' | asset_url | script_tag -}}
+<script src="{{ 'cart.js' | asset_url }}" defer></script>
 
 {%- if cart_add_discounts -%}
 	{{ 'cart-discounts.css' | asset_url | stylesheet_tag }}

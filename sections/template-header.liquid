@@ -75,12 +75,12 @@
 						{%- endif -%}
 					{%- endif -%}
 					{%- if template contains 'customers/account' -%}
-					<a href="{{ routes.account_logout_url }}" title="{{ 'customer.account.log_out' | t | escape }}" class="myaccount--link">
+					<a href="{{ routes.account_logout_url }}" title="{{ 'customer.account.log_out' | t | escape }}" class="myaccount--link" data-no-instant>
 						{% render 'svg-icons' with 'thb-log-out' %}
 						<span class="text-button">{{ 'customer.account.log_out' | t }}</span>
 					</a>
 					{%- elsif template contains 'customers' -%}
-					<a href="{{ routes.account_url }}" class="myaccount--link">
+					<a href="{{ routes.account_url }}" class="myaccount--link" data-no-instant>
 						{% render 'svg-icons' with 'thb-account-back' %}
 						<span class="text-button">{{ 'customer.account.return_to_account_details' | t }}</span>
 					</a>

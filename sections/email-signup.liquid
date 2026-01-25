@@ -13,7 +13,7 @@
 -%}
 <div class="row {% if full_width %} full-width-row-full{% endif %}">
 	<div class="small-12 columns">
-		<div class="email-signup email-signup--full-width-{{ full_width }} section-spacing-padding{% if disable_top_spacing %} section-spacing--disable-top{% endif %}{% if disable_bottom_spacing %} section-spacing--disable-bottom{% endif %}" style="--bg-body: {{ color_bg }}; --color-bg: {{ color_bg }}; --color-body:{{ color_text }}; --color-body-rgb:{{ color_text.rgb | replace: ' ' , ',' }}; --color-heading:{{ color_heading }}; --color-form-border:{{ color_border }};{% if background_image %}background-image: url({{ background_image | image_url: width: background_image.width }});{% endif %} --overlay-opacity: {{ overlay_opacity | divided_by: 100.0 }}; --color-overlay-rgb: {{ overlay_color.rgb | replace: ' ' , ',' }};"">
+		<div class="email-signup email-signup--full-width-{{ full_width }} section-spacing-padding{% if disable_top_spacing %} section-spacing--disable-top{% endif %}{% if disable_bottom_spacing %} section-spacing--disable-bottom{% endif %}" style="--bg-body: {{ color_bg }}; --color-bg: {{ color_bg }}; --color-body:{{ color_text }}; --color-body-rgb:{{ color_text.rgb | replace: ' ' , ',' }}; --color-heading:{{ color_heading }}; --color-form-border:{{ color_border }};{% if background_image %}background-image: url({{ background_image | image_url: width: background_image.width }});{% endif %} --overlay-opacity: {{ overlay_opacity | divided_by: 100.0 }}; --color-overlay-rgb: {{ overlay_color.rgb | replace: ' ' , ',' }}">
 			<div class="email-signup--inner">
 				{%- for block in section.blocks -%}
 					{%- case block.type -%}

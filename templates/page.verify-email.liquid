@@ -1,0 +1,176 @@
+{% comment %}
+  Email verification page
+  URL: /pages/verify-email?token=...
+{% endcomment %}
+
+{{ 'login-register.css' | asset_url | stylesheet_tag }}
+
+<div class="row">
+  <div class="small-12 columns">
+    <div class="thb-form-container" style="max-width: 600px; margin: 0 auto;">
+      <div class="thb-register-form">
+        <h4>Verify Your Email Address</h4>
+        <div id="verification-status" style="display: none;">
+          <div id="verification-message" class="form-notification"></div>
+        </div>
+        <div id="verification-loading" class="form-notification info">
+          <span>Verifying your email address...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+  
+  const BACKEND_API = window.BACKEND_API || 'https://api.sxrx.us';
+  const statusDiv = document.getElementById('verification-status');
+  const messageDiv = document.getElementById('verification-message');
+  const loadingDiv = document.getElementById('verification-loading');
+  
+  // Get token from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  
+  if (!token) {
+    loadingDiv.style.display = 'none';
+    statusDiv.style.display = 'block';
+    messageDiv.className = 'form-notification error';
+    messageDiv.innerHTML = '<strong>Error:</strong> No verification token provided. Please check your email and use the verification link.';
+    return;
+  }
+  
+  // Verify token
+  async function verifyEmail() {
+    try {
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      const url = `${BACKEND_API}/api/email-verification/verify`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ token })
+      });
+      
+      const result = await response.json();
+      
+      loadingDiv.style.display = 'none';
+      statusDiv.style.display = 'block';
+      
+      if (result.success) {
+        messageDiv.className = 'form-notification success';
+        messageDiv.innerHTML = `
+          <strong>✓ Email Verified Successfully!</strong><br>
+          Your email address has been verified. You can now access all features of your account.
+          <br><br>
+          <a href="/account/login" class="button" style="margin-top: 15px;">Continue to Login</a>
+        `;
+        
+        // Update global state if user is logged in
+        if (window.SXRX) {
+          window.SXRX.emailVerified = true;
+        }
+      } else {
+        messageDiv.className = 'form-notification error';
+        messageDiv.innerHTML = `
+          <strong>Verification Failed</strong><br>
+          ${result.message || 'Invalid or expired verification token.'}
+          <br><br>
+          <button id="resend-verification" class="button" style="margin-top: 15px;">Resend Verification Email</button>
+        `;
+        
+        // Add resend handler
+        const resendBtn = document.getElementById('resend-verification');
+        if (resendBtn) {
+          resendBtn.addEventListener('click', async () => {
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending...';
+            
+            try {
+              const email = result.email || prompt('Please enter your email address:');
+              if (!email) return;
+              
+              const resendUrl = `${BACKEND_API}/api/email-verification/resend`;
+              
+              const resendResponse = await fetch(resendUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ email })
+              });
+              
+              const resendResult = await resendResponse.json();
+              
+              if (resendResult.success) {
+                messageDiv.className = 'form-notification success';
+                messageDiv.innerHTML = `
+                  <strong>Verification Email Sent</strong><br>
+                  Please check your email (${email}) for a new verification link.
+                `;
+              } else {
+                messageDiv.className = 'form-notification error';
+                messageDiv.innerHTML = `
+                  <strong>Failed to Resend</strong><br>
+                  ${resendResult.message || 'Unable to resend verification email. Please try again later.'}
+                `;
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend Verification Email';
+              }
+            } catch (error) {
+              console.error('Resend error:', error);
+              resendBtn.disabled = false;
+              resendBtn.textContent = 'Resend Verification Email';
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      loadingDiv.style.display = 'none';
+      statusDiv.style.display = 'block';
+      messageDiv.className = 'form-notification error';
+      messageDiv.innerHTML = `
+        <strong>Error</strong><br>
+        Failed to verify email. Please try again later or contact support.
+      `;
+    }
+  }
+  
+  // Start verification on page load
+  verifyEmail();
+})();
+</script>
+
+<style>
+.form-notification.success {
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  color: #065f46;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.form-notification.error {
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.form-notification.info {
+  background: #dbeafe;
+  border: 1px solid #3b82f6;
+  color: #1e40af;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+</style>

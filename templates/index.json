@@ -48,7 +48,7 @@
             "overlay_gradient": "",
             "button_1_text": "Schedule an appointment",
             "button_1_color": "regular",
-            "button_1_link": "https://app.sxrx.us",
+            "button_1_link": "/pages/book-appointment",
             "use_text_button_1": false,
             "button_2_text": "",
             "button_2_color": "white",
@@ -500,7 +500,7 @@
           "type": "button",
           "settings": {
             "button_text": "Schedule an appointment",
-            "button_link": ""
+            "button_link": "/pages/book-appointment"
           }
         }
       },

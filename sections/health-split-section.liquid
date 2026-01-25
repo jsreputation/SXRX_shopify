@@ -21,7 +21,7 @@
       </div>
       <div class="health-image">
         {% if section.settings.w_image %}
-          <img src="{{ section.settings.w_image | image_url }}" alt="Women's Health">
+          <img src="{{ section.settings.w_image | image_url }}" width="{{ section.settings.w_image.width | default: 600 }}" height="{{ section.settings.w_image.height | default: 400 }}" alt="Women's Health">
         {% endif %}
       </div>
     </div>
@@ -46,7 +46,7 @@
       </div>
       <div class="health-image">
         {% if section.settings.m_image %}
-          <img src="{{ section.settings.m_image | image_url }}" alt="Men's Health">
+          <img src="{{ section.settings.m_image | image_url }}" width="{{ section.settings.m_image.width | default: 600 }}" height="{{ section.settings.m_image.height | default: 400 }}" alt="Men's Health">
         {% endif %}
       </div>
     </div>

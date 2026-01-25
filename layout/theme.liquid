@@ -39,6 +39,9 @@
 	{{ 'custom.css' | asset_url | stylesheet_tag }}
 	{{ 'product-grid.css' | asset_url | stylesheet_tag }}
 	{{ 'questionnaire-styles.css' | asset_url | stylesheet_tag }}
+	{{ 'loading-skeletons.css' | asset_url | stylesheet_tag }}
+	{{ 'animations.css' | asset_url | stylesheet_tag }}
+	{{ 'progress-indicators.css' | asset_url | stylesheet_tag }}
 
 	{% render 'head-variables' %}
 
@@ -77,15 +80,21 @@
 
 	<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
 	{{ settings.custom_html_head }}
-	{%- liquid
-	assign compare = false
-	if template.name contains 'collection' or template.name contains 'search'
-		if settings.enable_compare and settings.show_compare_toggle_on
-			assign compare = true
-		endif
-	endif
--%}
-</head>
+	{%- assign compare = false -%}
+	{%- if template.name contains 'collection' -%}
+		{%- if settings.enable_compare and settings.show_compare_toggle_on -%}{%- assign compare = true -%}{%- endif -%}
+	{%- endif -%}
+	{%- if template.name contains 'search' -%}
+		{%- if settings.enable_compare and settings.show_compare_toggle_on -%}{%- assign compare = true -%}{%- endif -%}
+	{%- endif -%}
+	{{ 'design-system.css' | asset_url | stylesheet_tag }}
+	{%- comment -%} Register service worker for offline support {%- endcomment -%}
+	<script src="{{ 'service-worker-register.js' | asset_url }}" defer></script>
+	{%- comment -%} Load notification system {%- endcomment -%}
+	<script src="{{ 'notifications.js' | asset_url }}" defer></script>
+	{%- comment -%} Load accessibility enhancements {%- endcomment -%}
+	<script src="{{ 'accessibility.js' | asset_url }}" defer></script>
+  </head>
 <body id="{{  page.title | handle }}" class="template-{{ request.page_type}} animations-{{ settings.animations }} button-uppercase-{{ settings.button_uppercase }} navigation-uppercase-{{ settings.navigation_uppercase }} product-card-spacing-{{ settings.product_card_spacing }} article-card-spacing-{{ settings.article_card_spacing }} compare-{{ compare }}{% if customer %} customer-logged-in{% endif %} template-{{ template | replace: '.', ' ' | truncatewords: 1, '' | handle }} template-{{ template | replace: '.', '-' | handle }}">
 	<a class="screen-reader-shortcut" href="#main-content">{{ 'accessibility.skip_to_text' | t }}</a>
 	<div id="wrapper">
@@ -101,12 +110,33 @@
 		<div class="click-capture"></div>
 		<div class="click-capture--product"></div>
 	</div>
-	{%- comment -%} Load scripts for My Chart and My Appointments pages {%- endcomment -%}
-	{%- if template.name == 'page' and page.handle == 'my-chart' -%}
-		<script src="{{ 'my-chart.js' | asset_url }}" defer></script>
-	{%- elsif template.name == 'page' and page.handle == 'my-appointments' -%}
-		<script src="{{ 'my-appointments.js' | asset_url }}" defer></script>
-	{%- endif -%}
+	{%- comment -%} Expose Shopify customer data for JS {%- endcomment -%}
+	<script>
+		// SXRX customer context
+		window.SXRX = window.SXRX || {};
+		window.SXRX.isLoggedIn = {{ customer != blank | json }};
+		window.SXRX.customerId = {{ customer.id | json }};
+		{%- if customer -%}
+		// Expose customer info for appointment booking and other features
+		window.SXRX.customerEmail = {{ customer.email | json }};
+		window.SXRX.customerFirstName = {{ customer.first_name | json }};
+		window.SXRX.customerLastName = {{ customer.last_name | json }};
+		window.SXRX.customerPhone = {{ customer.phone | json }};
+		{%- endif -%}
+		// Questionnaire page path (allow handle to be questionnaire or questionnaire-1, etc.)
+		window.SXRX.questionnairePagePath = {{ pages['questionnaire'].url | default: pages['questionnaire-1'].url | default: '/pages/questionnaire' | json }};
+    // Backend API URL from theme settings
+    window.BACKEND_API = {{ settings.sxrx_backend_api_url | default: 'https://api.sxrx.us' | json }};
+    
+    // These are loaded globally for use across all pages
+		try {
+			if (window.SXRX.customerId) {
+				sessionStorage.setItem('customerId', String(window.SXRX.customerId));
+			}
+		} catch (e) {}
+	</script>
+	{%- comment -%} Load scripts for My Chart and My Appointments pages (lazy loaded via script-loader.js) {%- endcomment -%}
+	{%- comment -%} Scripts are now loaded on-demand when containers become visible {%- endcomment -%}
 
 	{{ 'vendor.min.js' | asset_url | script_tag }}
 	{% if settings.animations %}
@@ -121,11 +151,19 @@
 			gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
 		</script>
 	{% endif %}
+	{{ 'loading-skeletons.js' | asset_url | script_tag }}
+	{{ 'animations.js' | asset_url | script_tag }}
+	{{ 'progress-indicators.js' | asset_url | script_tag }}
+	{{ 'script-loader.js' | asset_url | script_tag }}
+	{{ 'bundle-optimizer.js' | asset_url | script_tag }}
 	{{ 'slideshow.js' | asset_url | script_tag }}
 	{{ 'app.js' | asset_url | script_tag }}
-	{{ 'product.js' | asset_url | script_tag }}
-	{{ 'questionnaire-integration.js' | asset_url | script_tag }}
-	{{ 'schedule-integration.js' | asset_url | script_tag }}
+	{%- if template.name == 'product' -%}
+		{{ 'product.js' | asset_url | script_tag }}
+	{%- endif -%}
+	{%- comment -%} Questionnaire modules loaded on-demand via script-loader.js (lazy loading) {%- endcomment -%}
+	{%- comment -%} Modules are now loaded when questionnaire container becomes visible {%- endcomment -%}
+	{%- comment -%} schedule-integration.js removed - using appointment-booking.js instead {%- endcomment -%}
 	<script type="module" src="{{ 'scroll-shadow.js' | asset_url }}" defer="defer"></script>
 	<script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
 	{%- if settings.free_shipping -%}

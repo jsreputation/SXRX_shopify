@@ -1309,6 +1309,22 @@
     ]
   },
   {
+    "name": "SXRX Integration",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Backend API Configuration"
+      },
+      {
+        "type": "text",
+        "id": "sxrx_backend_api_url",
+        "label": "Backend API URL",
+        "default": "https://api.sxrx.us",
+        "info": "The base URL for the SXRX backend API."
+      }
+    ]
+  },
+  {
     "name": "Advanced",
     "settings": [
       {

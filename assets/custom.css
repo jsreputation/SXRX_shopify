@@ -1,23 +1,30 @@
+/* Custom CSS - Migrated to use design system tokens where applicable */
+/* Section-specific overrides maintained for brand consistency */
+
+/* Custom CSS - Migrated to use design system tokens where applicable */
+/* Section-specific overrides maintained for brand consistency */
+/* Migration Date: January 2026 */
+
 section.sxrx-hero {
     max-width: 84%;
     margin: 0 auto;
-        border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
+    border-top-left-radius: var(--radius-xl, 15px);
+    border-top-right-radius: var(--radius-xl, 15px);
 }
 #shopify-section-template--25476250435905__health_split_section_hzDMXy .health-wrapper {
     margin: 0 auto;
-    background: #012050;
-    padding: 2rem;
+    background: #012050; /* Brand-specific color - intentional override */
+    padding: var(--spacing-xl, 2rem);
 }
 div#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL {
     max-width: 84%;
     margin: 0 auto;
-    background: #012050;
-    padding: 3rem;
+    background: #012050; /* Brand-specific color - intentional override */
+    padding: var(--spacing-2xl, 3rem);
     width: 100%;
 }
 #shopify-section-template--25476250435905__mental_health_banner_Gd6JwL .mh-banner h2 {
-    color: #fff;
+    color: var(--color-text-inverse, #fff);
 }
 .process-section h2.process-heading {
     color: #fff;
@@ -31,15 +38,15 @@ div#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL {
 section.phone-testimonial-section {
     max-width: 84%;
     margin: 0 auto;
-    background: #012050;
-    padding: 2rem 2rem;
+    background: #012050; /* Brand-specific color - intentional override */
+    padding: var(--spacing-xl, 2rem);
 }
 #shopify-section-template--25476250435905__image_with_text_7mY4Rw .small-12.columns {
-    background: #012050;
-    padding: 0px;
+    background: #012050; /* Brand-specific color - intentional override */
+    padding: 0;
     margin: 0 auto;
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: var(--radius-xl, 15px);
+    border-bottom-right-radius: var(--radius-xl, 15px);
 }
 div#shopify-section-template--25476250435905__image_with_text_7mY4Rw {
     max-width: 84%;
@@ -59,22 +66,22 @@ div#shopify-section-template--25476250435905__image_with_text_7mY4Rw {
     justify-content: center;
 }
 theme-footer#footer {
-    background: #F3F4F8;
-    color: #000;
-    border-top: 1px solid #8080801f;
-    padding-bottom: 0px;
+    background: var(--color-bg-light, #F3F4F8);
+    color: var(--color-text, #000);
+    border-top: 1px solid var(--color-border, #8080801f);
+    padding-bottom: 0;
 }
 .footer button.thb-widget-title.collapsible {
-    color: #000 !important;
+    color: var(--color-text, #000) !important;
 }
 .footer a, .sub-footer p {
-   color: #000000b3!important;
+   color: rgba(0, 0, 0, 0.7) !important; /* Using rgba for opacity */
 }
 .footer a:focus, .footer a:hover {
-    color: #000!important;
+    color: var(--color-text, #000) !important;
 }
 #contact input::placeholder {
-    color: #000!important;
+    color: var(--color-text, #000) !important;
 }
 #contact .care-left img {
     max-width: 100%;
@@ -105,14 +112,14 @@ div#shopify-section-template--25476250435905__health_split_section_hzDMXy {
 
 @media(max-width:700px){
 #shopify-section-template--25476250435905__hero_sxrx_FrFAUC .sxrx-heading {
-    font-size: 34px;
+    font-size: var(--font-size-3xl, 34px);
     max-width: 100%;
 }
 div#shopify-section-template--25476250435905__health_split_section_hzDMXy, div#shopify-section-template--25476250435905__image_with_text_7mY4Rw {
     max-width: 91%;
 }
 #shopify-section-template--25476250435905__hero_sxrx_FrFAUC .sxrx-hero{
-    padding: 70px 20px;
+    padding: var(--spacing-3xl, 70px) var(--spacing-xl, 20px);
 }
 #shopify-section-template--25476250435905__hero_sxrx_FrFAUC .sxrx-smalltext {
     max-width: 100%;
@@ -130,28 +137,28 @@ section.sxrx-hero {
         padding-bottom: 0px !important;
 }
 #shopify-section-template--25476250435905__health_split_section_hzDMXy .health-box{
-    padding: 21px;
+    padding: var(--spacing-lg, 21px);
 }
 div#shopify-section-template--25476250435905__mental_health_banner_Gd6JwL {
     max-width: 91%;
-     padding-top: 0px!important;
-         padding: 1rem;
+    padding-top: 0 !important;
+    padding: var(--spacing-md, 1rem);
 }
 #shopify-section-template--25476250435905__mental_health_banner_Gd6JwL .mh-content {
     max-width: 100%;
 }
 #shopify-section-template--25476250435905__mental_health_banner_Gd6JwL .mh-banner{
-    padding: 21px;
+    padding: var(--spacing-lg, 21px);
 }
 #shopify-section-template--25476250435905__process_steps_LT6ATj .process-section {
     max-width: 91%;
 }
 #shopify-section-template--25476250435905__health_split_section_hzDMXy .health-wrapper{
-    padding: 1rem;
+    padding: var(--spacing-md, 1rem);
 }
 section.phone-testimonial-section {
     max-width: 91%;
-        padding: 1rem;
+    padding: var(--spacing-md, 1rem);
 }
 #shopify-section-template--25476250435905__testimonials_phone_zH6JbV .pt-heading{
     margin-bottom: 0px;
@@ -161,8 +168,8 @@ section.phone-testimonial-section {
 } */
 #shopify-section-template--25476250435905__collapsible_content_FNHLcP h3.section-header--title {
     text-align: center;
-    font-size: 31px;
-    line-height: 44px;
+    font-size: var(--font-size-2xl, 31px);
+    line-height: var(--line-height-tight, 44px);
 }
 #shopify-section-template--25476250435905__collapsible_content_FNHLcP .collapsible-content.section-spacing{
     max-width: 90%;
@@ -173,13 +180,13 @@ section.phone-testimonial-section {
 }
 #shopify-section-template--25476250435905__featured_blog_eTykzE h3.section-header--title {
     text-align: center;
-    font-size: 40px;
+    font-size: var(--font-size-4xl, 40px);
 }
 #shopify-section-template--25476250435905__featured_blog_eTykzE .blog-posts.section-spacing.section-spacing--disable-top {
     margin-bottom: 0px;
 }
 .footer .thb-widget-title.collapsible span svg path {
-    stroke: #000000!important;
+    stroke: var(--color-text, #000000) !important;
 }
 .sub-footer {
     margin-top: 0px!important;
@@ -189,16 +196,16 @@ section.phone-testimonial-section {
 .custom-content-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 .custom-content-heading {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1a1c1d;
-    margin: 0 0 2rem 0;
+    font-size: var(--font-size-2xl, 2rem);
+    font-weight: var(--font-weight-bold, 700);
+    color: var(--color-text, #1a1c1d);
+    margin: 0 0 var(--spacing-xl, 2rem) 0;
     text-align: center;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--letter-spacing-tight, -0.02em);
 }
 
 .custom-content-body {
@@ -222,21 +229,21 @@ section.phone-testimonial-section {
 .questionnaire-page-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 3rem 2rem;
+    padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
 }
 
 @media (max-width: 768px) {
     .custom-content-container {
-        padding: 1.5rem 1rem;
+        padding: var(--spacing-lg, 1.5rem) var(--spacing-md, 1rem);
     }
     
     .custom-content-heading {
-        font-size: 1.75rem;
-        margin-bottom: 1.5rem;
+        font-size: var(--font-size-xl, 1.75rem);
+        margin-bottom: var(--spacing-lg, 1.5rem);
     }
     
     .questionnaire-page-container {
-        padding: 2rem 1rem;
+        padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
     }
 }
 
@@ -244,61 +251,61 @@ section.phone-testimonial-section {
 .page-content-width {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 var(--spacing-md, 1rem);
 }
 
 /* Section Spacing Improvements */
 .section-spacing {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    padding-top: var(--spacing-xl, 2rem);
+    padding-bottom: var(--spacing-xl, 2rem);
 }
 
 @media (min-width: 768px) {
     .section-spacing {
-        padding-top: 3rem;
-        padding-bottom: 3rem;
+        padding-top: var(--spacing-2xl, 3rem);
+        padding-bottom: var(--spacing-2xl, 3rem);
     }
 }
 
 /* Main Page Section - Better spacing */
 .main-page .section-spacing {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    padding-top: var(--spacing-xl, 2rem);
+    padding-bottom: var(--spacing-xl, 2rem);
 }
 
 @media (min-width: 768px) {
     .main-page .section-spacing {
-        padding-top: 3rem;
-        padding-bottom: 3rem;
+        padding-top: var(--spacing-2xl, 3rem);
+        padding-bottom: var(--spacing-2xl, 3rem);
     }
 }
 
 /* Blog Post Detail - Consistent padding */
 .blog-post-detail {
-    padding: 0 1rem;
+    padding: 0 var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .blog-post-detail {
-        padding: 0 2rem;
+        padding: 0 var(--spacing-xl, 2rem);
     }
 }
 
 /* Template Header - Ensure proper spacing */
 .template-header {
-    margin-bottom: 2rem;
+    margin-bottom: var(--spacing-xl, 2rem);
 }
 
 /* Breadcrumbs - Proper spacing */
 .breadcrumbs {
-    padding: 1rem 0;
-    margin-bottom: 1rem;
+    padding: var(--spacing-md, 1rem) 0;
+    margin-bottom: var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .breadcrumbs {
-        padding: 1.5rem 0;
-        margin-bottom: 1.5rem;
+        padding: var(--spacing-lg, 1.5rem) 0;
+        margin-bottom: var(--spacing-lg, 1.5rem);
     }
 }
 
@@ -308,7 +315,7 @@ section.phone-testimonial-section {
 .main-addresses,
 .main-activate-account,
 .main-reset-password {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
@@ -317,14 +324,14 @@ section.phone-testimonial-section {
     .main-addresses,
     .main-activate-account,
     .main-reset-password {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* Contact Form - Proper spacing */
 .contact-form,
 #contact {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -332,42 +339,42 @@ section.phone-testimonial-section {
 @media (min-width: 768px) {
     .contact-form,
     #contact {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* Rich Text Sections - Consistent padding */
 .rich-text {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .rich-text {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* Template Header - Consistent spacing */
 .template-header {
-    padding: 1.5rem 1rem;
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .template-header {
-        padding: 2rem;
+        padding: var(--spacing-xl, 2rem);
     }
 }
 
 /* Row and Column Padding - Ensure consistent spacing */
 .row {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: var(--spacing-md, 1rem);
+    padding-right: var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .row {
-        padding-left: 2rem;
-        padding-right: 2rem;
+        padding-left: var(--spacing-xl, 2rem);
+        padding-right: var(--spacing-xl, 2rem);
     }
 }
 
@@ -379,70 +386,70 @@ section.phone-testimonial-section {
 
 /* Cart Page - Better spacing */
 .main-cart {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .main-cart {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* Search Page - Proper spacing */
 .main-search {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .main-search {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* Blog Pages - Consistent spacing */
 .main-blog,
 .main-article {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .main-blog,
     .main-article {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* Collection Pages - Better spacing */
 .main-collection-product-grid {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .main-collection-product-grid {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* Order Page - Proper spacing */
 .main-order {
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .main-order {
-        padding: 3rem 2rem;
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
     }
 }
 
 /* 404 Page - Consistent spacing */
 .main-404 {
-    padding: 3rem 1rem;
+    padding: var(--spacing-2xl, 3rem) var(--spacing-md, 1rem);
     text-align: center;
 }
 
 @media (min-width: 768px) {
     .main-404 {
-        padding: 4rem 2rem;
+        padding: var(--spacing-3xl, 4rem) var(--spacing-xl, 2rem);
     }
 }
 
@@ -451,13 +458,13 @@ section.phone-testimonial-section {
 .page-wrapper {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 var(--spacing-md, 1rem);
 }
 
 @media (min-width: 768px) {
     .page-container,
     .page-wrapper {
-        padding: 0 2rem;
+        padding: 0 var(--spacing-xl, 2rem);
     }
 }
 }

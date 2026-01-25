@@ -10,16 +10,16 @@
   Example: If your General Health quiz ID is "ABC123XYZ", replace 'GENERAL_HEALTH_QUIZ_ID' with 'ABC123XYZ'
 {%- endcomment -%}
 
-{%- assign QUIZ_GENERAL_HEALTH = '0k34ts' -%}
-{%- assign QUIZ_MENTAL_HEALTH = 'QNLeG7' -%}
-{%- assign QUIZ_ED = '2m90Mo' -%}
-{%- assign QUIZ_LOW_LIBIDO = 'Gh6L0K' -%}
-{%- assign QUIZ_PE = 'gl11rd' -%}
-{%- assign QUIZ_LOW_TESTOSTERONE = 'yFYLQN' -%}
-{%- assign QUIZ_WEIGHT_MANAGEMENT = 'FAO9CM' -%}
-{%- assign QUIZ_MENOPAUSE_HRT = 'S7thaH' -%}
-{%- assign QUIZ_HAIR_LOSS = 'UBhavI' -%}
-{%- assign QUIZ_DEFAULT = '0k34tS' -%} {%- comment -%} Fallback/default quiz ID {%- endcomment -%}
+{%- assign QUIZ_GENERAL_HEALTH = 'NDJUh0' -%}
+{%- assign QUIZ_MENTAL_HEALTH = 'z1cgu7' -%}
+{%- assign QUIZ_ED = 'x3D3eJ' -%}
+{%- assign QUIZ_LOW_LIBIDO = 'jFbky2' -%}
+{%- assign QUIZ_PE = 'KtsajY' -%}
+{%- assign QUIZ_LOW_TESTOSTERONE = '6GwN3l' -%}
+{%- assign QUIZ_WEIGHT_MANAGEMENT = 'awZXDP' -%}
+{%- assign QUIZ_MENOPAUSE_HRT = 'rHL2qe' -%}
+{%- assign QUIZ_HAIR_LOSS = 'q56fWm' -%}
+{%- assign QUIZ_DEFAULT = QUIZ_GENERAL_HEALTH -%} {%- comment -%} Fallback/default quiz ID {%- endcomment -%}
 
 {%- comment -%}
   Function to get quiz ID based on product
@@ -27,29 +27,31 @@
   Returns: quizId variable
 {%- endcomment -%}
 
-{%- assign quizId = product.metafields.sxrx.quiz_id -%}
+{%- assign quizId = product.metafields.sxrx.quiz_id.value | default: product.metafields.sxrx.quiz_id -%}
+{%- assign tags_str = product.tags | join: ',' | downcase -%}
 
 {%- if quizId == blank -%}
-  {%- if product.tags contains 'questionnaire-general-health' -%}
+  {%- if tags_str contains 'questionnaire-general-health' -%}
     {%- assign quizId = QUIZ_GENERAL_HEALTH -%}
-  {%- elsif product.tags contains 'questionnaire-mental-health' -%}
+  {%- elsif tags_str contains 'questionnaire-mental-health' -%}
     {%- assign quizId = QUIZ_MENTAL_HEALTH -%}
-  {%- elsif product.tags contains 'questionnaire-erectile-dysfunction' or product.tags contains 'questionnaire-ed' -%}
+  {%- elsif tags_str contains 'questionnaire-erectile-dysfunction' or tags_str contains 'questionnaire-ed' -%}
     {%- assign quizId = QUIZ_ED -%}
-  {%- elsif product.tags contains 'questionnaire-low-libido' -%}
+  {%- elsif tags_str contains 'questionnaire-low-libido' -%}
     {%- assign quizId = QUIZ_LOW_LIBIDO -%}
-  {%- elsif product.tags contains 'questionnaire-premature-ejaculation' or product.tags contains 'questionnaire-pe' -%}
+  {%- elsif tags_str contains 'questionnaire-premature-ejaculation' or tags_str contains 'questionnaire-pe' -%}
     {%- assign quizId = QUIZ_PE -%}
-  {%- elsif product.tags contains 'questionnaire-low-testosterone' or product.tags contains 'questionnaire-trt' -%}
+  {%- elsif tags_str contains 'questionnaire-low-testosterone' or tags_str contains 'questionnaire-trt' -%}
     {%- assign quizId = QUIZ_LOW_TESTOSTERONE -%}
-  {%- elsif product.tags contains 'questionnaire-weight-management' or product.tags contains 'questionnaire-glp1' -%}
+  {%- elsif tags_str contains 'questionnaire-weight-management' or tags_str contains 'questionnaire-glp1' -%}
     {%- assign quizId = QUIZ_WEIGHT_MANAGEMENT -%}
-  {%- elsif product.tags contains 'questionnaire-menopause' or product.tags contains 'questionnaire-hrt' -%}
+  {%- elsif tags_str contains 'questionnaire-menopause' or tags_str contains 'questionnaire-hrt' -%}
     {%- assign quizId = QUIZ_MENOPAUSE_HRT -%}
-  {%- elsif product.tags contains 'questionnaire-hair-loss' -%}
+  {%- elsif tags_str contains 'questionnaire-hair-loss' -%}
     {%- assign quizId = QUIZ_HAIR_LOSS -%}
   {%- else -%}
     {%- assign quizId = QUIZ_DEFAULT -%}
   {%- endif -%}
 {%- endif -%}
 
+{{- quizId -}}

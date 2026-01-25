@@ -14,7 +14,7 @@
         {% for block in section.blocks %}
           <div class="pt-card">
             {% if block.settings.avatar %}
-              <img class="pt-avatar" src="{{ block.settings.avatar | img_url: '100x' }}" alt="">
+              <img class="pt-avatar" src="{{ block.settings.avatar | image_url: width: 100 }}" width="100" height="{{ block.settings.avatar.height | default: 100 }}" alt="">
             {% endif %}
             <p class="pt-name">{{ block.settings.name }}</p>
             <p class="pt-text">{{ block.settings.text }}</p>
@@ -35,7 +35,7 @@
 
       <!-- Phone mockup -->
       <div class="pt-phone">
-        <img src="{{ section.settings.phone_image | img_url: '600x' }}" alt="">
+        <img src="{{ section.settings.phone_image | image_url: width: 600 }}" width="600" height="{{ section.settings.phone_image.height | default: 600 }}" alt="">
       </div>
 
     </div>
