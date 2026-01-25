@@ -38,6 +38,32 @@
     if (d === 'asc' || d === 'desc') appointmentsUiState.sortDir = d;
   } catch (e) {}
 
+  function isNgrokBackend() {
+    return /ngrok/i.test(BACKEND_API);
+  }
+
+  function withNgrokSkip(url) {
+    try {
+      if (!isNgrokBackend()) return url;
+      const u = new URL(url);
+      if (!u.searchParams.has('ngrok-skip-browser-warning')) {
+        u.searchParams.set('ngrok-skip-browser-warning', '1');
+      }
+      return u.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+
+  function addNgrokBypassHeader(headers) {
+    if (!isNgrokBackend()) return;
+    if (headers && typeof headers.set === 'function') {
+      headers.set('ngrok-skip-browser-warning', '1');
+      return;
+    }
+    headers['ngrok-skip-browser-warning'] = '1';
+  }
+
   async function readJsonOrThrow(res) {
     const ct = String(res.headers.get('content-type') || '').toLowerCase();
     if (ct.includes('application/json') || ct.includes('+json')) {
@@ -1042,15 +1068,17 @@
         headers.set('shopify_access_token', shopifyCustomerToken);
       }
 
+      addNgrokBypassHeader(headers);
       
       console.log(`🔍 [MY-APPOINTMENTS] Loading appointments for customer ${customerId}`, {
         hasStorefrontToken: !!storefrontToken,
         hasShopifyToken: !!shopifyCustomerToken,
+        isNgrokBackend: isNgrokBackend(),
         headerKeys: Array.from(headers.keys ? headers.keys() : [])
       });
       
       // First, get patient chart to get Tebra patient ID
-      const chartResponse = await fetch(`${BACKEND_API}/api/shopify/customers/${customerId}/chart`, {
+      const chartResponse = await fetch(withNgrokSkip(`${BACKEND_API}/api/shopify/customers/${customerId}/chart`), {
         headers
       });
 
@@ -1075,7 +1103,7 @@
       // Also try to fetch appointments directly from appointments endpoint if available
       let additionalAppointments = [];
       try {
-        const appointmentsResponse = await fetch(`${BACKEND_API}/api/shopify/customers/${customerId}/appointments`, {
+        const appointmentsResponse = await fetch(withNgrokSkip(`${BACKEND_API}/api/shopify/customers/${customerId}/appointments`), {
           headers
         });
 
@@ -1695,7 +1723,6 @@
   function handleScheduleClick(event) {
     event.preventDefault();
     
-    // Check if user is logged in
     const customerId = resolveCustomerId();
     const isLoggedIn = !!(window.SXRX?.isLoggedIn || 
                          window.Shopify?.customer?.id || 
@@ -1724,6 +1751,7 @@
     const container = document.getElementById('my-appointments-container');
     if (container) {
       addStyles();
+      const isLoggedIn = !!(window.SXRX?.isLoggedIn || document.body.classList.contains('customer-logged-in'));
       container.innerHTML = `
         <div class="loading-container">
           <div class="loading-spinner"></div>

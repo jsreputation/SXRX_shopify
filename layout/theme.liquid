@@ -125,10 +125,7 @@
 		{%- endif -%}
 		// Questionnaire page path (allow handle to be questionnaire or questionnaire-1, etc.)
 		window.SXRX.questionnairePagePath = {{ pages['questionnaire'].url | default: pages['questionnaire-1'].url | default: '/pages/questionnaire' | json }};
-    // Backend API URL from theme settings
-    window.BACKEND_API = {{ settings.sxrx_backend_api_url | default: 'https://api.sxrx.us' | json }};
-    
-    // These are loaded globally for use across all pages
+		window.BACKEND_API = {{ settings.sxrx_backend_api_url | default: 'https://api.sxrx.us' | json }};
 		try {
 			if (window.SXRX.customerId) {
 				sessionStorage.setItem('customerId', String(window.SXRX.customerId));
@@ -136,7 +133,6 @@
 		} catch (e) {}
 	</script>
 	{%- comment -%} Load scripts for My Chart and My Appointments pages (lazy loaded via script-loader.js) {%- endcomment -%}
-	{%- comment -%} Scripts are now loaded on-demand when containers become visible {%- endcomment -%}
 
 	{{ 'vendor.min.js' | asset_url | script_tag }}
 	{% if settings.animations %}

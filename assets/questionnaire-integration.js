@@ -6,7 +6,8 @@
   'use strict';
 
   const QUESTIONNAIRE_INTEGRATION_VERSION = '2026-01-21-1';
-  console.log(`[SXRX] questionnaire-integration loaded (${QUESTIONNAIRE_INTEGRATION_VERSION})`);
+  const BACKEND_API = window.BACKEND_API || 'https://api.sxrx.us';
+  console.log(`[SXRX] questionnaire-integration loaded (${QUESTIONNAIRE_INTEGRATION_VERSION})`, { BACKEND_API });
 
   // Wait for all modules to be loaded
   const init = () => {
